@@ -932,7 +932,10 @@
         state.autoNoteOffTimer = null;
       }
       audio.stopAll();
-      document.querySelectorAll('.white-key.active, .black-key.active').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.white-key.active, .black-key.active').forEach(el => {
+        el.classList.remove('active');
+        el.setAttribute('aria-pressed', 'false');
+      });
       updateAutoPlayButtonUI();
     }
 
