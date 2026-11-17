@@ -1,0 +1,2134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>みんなの鍵盤ハーモニカ 32鍵盤練習アプリ</title>
+  <!-- Tailwind CSS -->
+  <!-- Google Fonts: 親しみやすく視認性の高い丸ゴシック -->
+  <link rel="stylesheet" href="css/u.css">
+  <style>
+    :root {
+      --body-bg: #e0f2fe;
+      --case-main: #38bdf8;
+      --case-dark: #0284c7;
+      --case-light: #bae6fd;
+      --case-accent: #facc15;
+    }
+
+    /* カラーテーマ定義 */
+    [data-theme="blue"] {
+      --body-bg: #f0f9ff;
+      --case-main: #38bdf8;
+      --case-dark: #0369a1;
+      --case-light: #e0f2fe;
+      --case-accent: #fde047;
+    }
+    [data-theme="mint"] {
+      --body-bg: #ecfdf5;
+      --case-main: #34d399;
+      --case-dark: #047857;
+      --case-light: #d1fae5;
+      --case-accent: #fef08a;
+    }
+    [data-theme="yellow"] {
+      --body-bg: #fefce8;
+      --case-main: #facc15;
+      --case-dark: #a16207;
+      --case-light: #fef9c3;
+      --case-accent: #38bdf8;
+    }
+    [data-theme="pink"] {
+      --body-bg: #fff1f2;
+      --case-main: #fb7185;
+      --case-dark: #be123c;
+      --case-light: #ffe4e6;
+      --case-accent: #fde047;
+    }
+
+    body {
+      font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+      background-color: var(--body-bg);
+      transition: background-color 0.35s ease;
+      overscroll-behavior: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* 鍵盤ハーモニカ本体ケース */
+    .pianica-case {
+      background: linear-gradient(180deg, var(--case-main) 0%, var(--case-dark) 100%);
+      box-shadow: 0 14px 30px -6px rgba(15, 23, 42, 0.22), inset 0 2px 4px rgba(255, 255, 255, 0.55);
+      transition: background 0.35s ease;
+    }
+
+    /* 鍵盤コンテナのカスタムスクロールバー */
+    .keyboard-scroll::-webkit-scrollbar {
+      height: 8px;
+    }
+    .keyboard-scroll::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.25);
+      border-radius: 9999px;
+    }
+    .keyboard-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.65);
+      border-radius: 9999px;
+    }
+
+    /* 白鍵スタイル */
+    .white-key {
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 85%, #e2e8f0 100%);
+      border: 1px solid #94a3b8;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      box-shadow: 0 5px 0 #cbd5e1, 0 7px 10px rgba(0, 0, 0, 0.18);
+      transition: transform 0.04s ease, box-shadow 0.04s ease, background 0.12s ease;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .white-key.active {
+      background: linear-gradient(180deg, #f1f5f9 0%, #e0f2fe 100%);
+      transform: translateY(4px);
+      box-shadow: 0 1px 0 #94a3b8, 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    /* 黒鍵スタイル */
+    .black-key {
+      background: linear-gradient(180deg, #334155 0%, #1e293b 75%, #0f172a 100%);
+      border: 1px solid #0f172a;
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      box-shadow: 0 4px 0 #020617, 0 6px 8px rgba(0, 0, 0, 0.38), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+      transition: transform 0.04s ease, box-shadow 0.04s ease, background 0.12s ease;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .black-key.active {
+      background: linear-gradient(180deg, #475569 0%, #1e293b 100%);
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #020617, 0 2px 4px rgba(0, 0, 0, 0.35);
+    }
+
+    /* 光るガイドアニメーション（白鍵） */
+    @keyframes guidePulseWhite {
+      0%, 100% {
+        background: linear-gradient(180deg, #fef08a 0%, #fde047 65%, #facc15 100%);
+        box-shadow: 0 5px 0 #ca8a04, 0 0 18px rgba(250, 204, 21, 0.95);
+      }
+      50% {
+        background: linear-gradient(180deg, #fffbeb 0%, #fef08a 65%, #fde047 100%);
+        box-shadow: 0 5px 0 #eab308, 0 0 28px rgba(253, 224, 71, 1);
+      }
+    }
+
+    .white-key.guide-target {
+      animation: guidePulseWhite 1.1s infinite ease-in-out;
+      border-color: #eab308;
+    }
+
+    /* 光るガイドアニメーション（黒鍵） */
+    @keyframes guidePulseBlack {
+      0%, 100% {
+        background: linear-gradient(180deg, #f59e0b 0%, #d97706 80%, #b45309 100%);
+        box-shadow: 0 4px 0 #78350f, 0 0 18px rgba(245, 158, 11, 0.95);
+      }
+      50% {
+        background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 80%, #d97706 100%);
+        box-shadow: 0 4px 0 #92400e, 0 0 26px rgba(251, 191, 36, 1);
+      }
+    }
+
+    .black-key.guide-target {
+      animation: guidePulseBlack 1.1s infinite ease-in-out;
+      border-color: #fbbf24;
+    }
+
+    /* 間違いフィードバック */
+    @keyframes wrongShake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-3px); }
+      75% { transform: translateX(3px); }
+    }
+    .key-wrong {
+      background: linear-gradient(180deg, #fecdd3 0%, #fda4af 100%) !important;
+      animation: wrongShake 0.25s ease-in-out;
+    }
+
+    /* 吹き口の息インジケーターアニメーション */
+    @keyframes breathGlow {
+      0%, 100% { opacity: 0.75; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.06); }
+    }
+    .breathing {
+      animation: breathGlow 0.5s infinite ease-in-out;
+    }
+
+    /* カスタムスクロールバー（楽譜モニター） */
+    .score-ribbon::-webkit-scrollbar {
+      height: 6px;
+    }
+    .score-ribbon::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 9999px;
+    }
+    .score-ribbon::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body data-theme="blue" class="min-h-screen flex flex-col text-slate-800 selection:bg-sky-200">
+
+  <!-- トップヘッダー：タイトル・カラー・音色・ボリューム -->
+  <header class="w-full bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-sm sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-3 sm:px-5 py-2.5 flex flex-wrap items-center justify-between gap-2">
+      <!-- アプリロゴ -->
+      <a href="index.html" style="text-decoration:none" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-extrabold border border-slate-200">🏠 入り口</a>
+        <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center text-white shadow-sm">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <rect x="2" y="5" width="20" height="14" rx="2" />
+            <line x1="6" y1="5" x2="6" y2="19" />
+            <line x1="10" y1="5" x2="10" y2="19" />
+            <line x1="14" y1="5" x2="14" y2="19" />
+            <line x1="18" y1="5" x2="18" y2="19" />
+            <rect x="5" y="5" width="2" height="8" fill="currentColor" />
+            <rect x="9" y="5" width="2" height="8" fill="currentColor" />
+            <rect x="13" y="5" width="2" height="8" fill="currentColor" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-slate-800 leading-tight">
+            鍵盤ハーモニカ <span class="text-xs font-bold px-1.5 py-0.5 rounded-md bg-sky-100 text-sky-700 align-middle">32鍵盤</span>
+          </h1>
+          <p class="text-[11px] text-slate-500 hidden sm:block">低いファ(F3) 〜 高いド(C6) ・ リアルリード音源</p>
+        </div>
+      </div>
+
+      <!-- サウンド＆見た目コントロール群 -->
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+        <!-- 音色プリセット -->
+        <div class="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1.5 rounded-xl border border-slate-200/70">
+          <span class="text-xs font-bold text-slate-600 hidden md:inline">音色:</span>
+          <select id="timbreSelect" class="bg-transparent text-xs sm:text-sm font-bold text-slate-700 focus:outline-none cursor-pointer">
+            <option value="standard">🎹 標準（ピアニカ風）</option>
+            <option value="soft">🎵 やわらか（メロディオン風）</option>
+            <option value="accordion">🪗 アコーディオン風</option>
+          </select>
+        </div>
+
+        <!-- 音量スライダー -->
+        <div class="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1.5 rounded-xl border border-slate-200/70">
+          <svg class="w-4 h-4 text-slate-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" opacity="0.2"/>
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          </svg>
+          <input id="volumeSlider" type="range" min="0" max="100" value="75" class="w-16 sm:w-20 accent-sky-500 cursor-pointer" aria-label="音量" />
+        </div>
+
+        <!-- 本体カラーテーマ -->
+        <div class="flex items-center gap-1.5 bg-slate-100 px-2 py-1.5 rounded-xl border border-slate-200/70" title="本体カラー変更">
+          <button type="button" data-set-theme="blue" class="theme-btn w-5 h-5 rounded-full bg-sky-400 ring-2 ring-offset-1 ring-sky-500 transition-transform hover:scale-110" aria-label="パステルブルー"></button>
+          <button type="button" data-set-theme="mint" class="theme-btn w-5 h-5 rounded-full bg-emerald-400 ring-offset-1 ring-emerald-500 transition-transform hover:scale-110" aria-label="ミントグリーン"></button>
+          <button type="button" data-set-theme="yellow" class="theme-btn w-5 h-5 rounded-full bg-yellow-400 ring-offset-1 ring-yellow-500 transition-transform hover:scale-110" aria-label="クリームイエロー"></button>
+          <button type="button" data-set-theme="pink" class="theme-btn w-5 h-5 rounded-full bg-rose-400 ring-offset-1 ring-rose-500 transition-transform hover:scale-110" aria-label="サクラピンク"></button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- メインコンテンツ -->
+  <main class="flex-1 w-full max-w-7xl mx-auto px-2 sm:px-5 py-3 flex flex-col gap-3">
+
+    <!-- ステップ録音中の専用バナー（通常時は非表示） -->
+    <div id="stepRecordBanner" class="hidden bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-2xl p-3 shadow-lg flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5">
+        <span class="w-3 h-3 rounded-full bg-white animate-ping"></span>
+        <div>
+          <p class="font-extrabold text-sm sm:text-base">🎹 鍵盤で楽譜を入力中！</p>
+          <p class="text-xs text-rose-100">下の鍵盤やPCキーボードを押すと、順番にドレミが記録されます。</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="recInsertRestBtn" type="button" class="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-xl text-xs font-bold transition">＋ 休符</button>
+        <button id="recInsertExtendBtn" type="button" class="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-xl text-xs font-bold transition">＋ ー(のばす)</button>
+        <button id="recBackspaceBtn" type="button" class="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-xl text-xs font-bold transition">1つ消す</button>
+        <button id="recFinishBtn" type="button" class="px-4 py-1.5 bg-white text-rose-600 hover:bg-rose-50 rounded-xl text-xs sm:text-sm font-extrabold shadow transition">入力完了して戻る</button>
+      </div>
+    </div>
+
+    <!-- 1. モード・曲選択＆コントロールパネル -->
+    <section class="bg-white rounded-2xl p-3 sm:p-4 shadow-sm border border-slate-200/80 flex flex-col gap-3">
+      <div class="flex flex-wrap items-center justify-between gap-2.5">
+        <!-- モード切替タブ -->
+        <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/70 w-full sm:w-auto">
+          <button type="button" data-mode="free" class="mode-btn flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold transition bg-white text-sky-600 shadow-sm">
+            🎵 自由演奏
+          </button>
+          <button type="button" data-mode="guide" class="mode-btn flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition">
+            ✨ 光るガイド練習
+          </button>
+          <button type="button" data-mode="auto" class="mode-btn flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition">
+            ▶️ お手本再生
+          </button>
+        </div>
+
+        <!-- 曲選択 ＆ ＋楽譜を入れるボタン -->
+        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+          <div class="flex items-center gap-1.5 flex-1 sm:flex-initial">
+            <label for="songSelect" class="text-xs font-bold text-slate-500 whitespace-nowrap">曲:</label>
+            <select id="songSelect" class="w-full sm:w-52 bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs sm:text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400">
+              <!-- JSでプリセット＆カスタム曲を生成 -->
+            </select>
+          </div>
+
+          <!-- カスタム曲の編集・削除ボタン（カスタム曲選択時のみ表示） -->
+          <div id="customSongActions" class="hidden items-center gap-1">
+            <button id="editSongBtn" type="button" class="p-2 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 text-xs font-bold transition" title="この楽譜を編集">
+              ✏️
+            </button>
+            <button id="deleteSongBtn" type="button" class="p-2 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 text-xs font-bold transition" title="この楽譜を削除">
+              🗑️
+            </button>
+          </div>
+
+          <!-- ＋楽譜を入れる -->
+          <button id="openScoreModalBtn" type="button" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-slate-900 font-extrabold text-xs sm:text-sm shadow-sm flex items-center gap-1 transition active:scale-95">
+            <span>＋ 楽譜を入れる</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- モード別のサブコントロール（ガイド進捗 / 自動再生テンポ） -->
+      <div id="practiceControlBar" class="hidden pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+        <!-- 左側：状態メッセージと進捗 -->
+        <div class="flex items-center gap-2.5">
+          <span id="practiceBadge" class="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 text-xs font-extrabold">
+            次の音: ド
+          </span>
+          <span id="practiceProgressText" class="text-xs font-bold text-slate-500">
+            0 / 16 音
+          </span>
+          <span id="feedbackMessage" class="text-xs font-bold text-rose-500 transition-opacity duration-200 opacity-0"></span>
+        </div>
+
+        <!-- 右側：再生・リセットコントロール -->
+        <div class="flex items-center gap-2">
+          <!-- 自動再生時のみ表示するテンポスライダー -->
+          <div id="tempoControlGroup" class="hidden items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-xl">
+            <span class="text-xs font-bold text-slate-600">速さ:</span>
+            <input id="bpmSlider" type="range" min="50" max="180" value="105" class="w-20 accent-sky-500 cursor-pointer" />
+            <span id="bpmValue" class="text-xs font-extrabold text-slate-700 w-12 text-right">105 BPM</span>
+          </div>
+
+          <button id="autoPlayToggleBtn" type="button" class="hidden px-3.5 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs font-extrabold shadow-sm transition">
+            ▶️ 再生スタート
+          </button>
+
+          <button id="resetSongBtn" type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">
+            ⏮ 最初から
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. 楽譜モニター（横スクロール帯） -->
+      <div class="relative bg-slate-50 rounded-xl border border-slate-200/90 p-2">
+        <div class="flex items-center justify-between mb-1 px-1">
+          <span class="text-[11px] font-bold text-slate-400 flex items-center gap-1">
+            🎼 楽譜モニター
+            <span id="currentSongTitleDisplay" class="text-slate-600 font-extrabold ml-1">きらきら星</span>
+          </span>
+          <span id="lastPlayedNoteDisplay" class="text-[11px] font-bold text-sky-600">
+            いま弾いた音: ー
+          </span>
+        </div>
+        <div id="scoreRibbon" class="score-ribbon flex items-center gap-1.5 overflow-x-auto py-1.5 px-1 min-h-[54px]">
+          <!-- JSで音符カードを動的生成 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 表示設定＆PCキーボードシフトバー -->
+    <section class="bg-white/90 rounded-2xl px-3 py-2 shadow-sm border border-slate-200/80 flex flex-wrap items-center justify-between gap-2">
+      <!-- 表示トグル群 -->
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- ドレミ表示トグル -->
+        <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
+          <input id="toggleDoremi" type="checkbox" checked class="sr-only peer" />
+          <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-sky-500 relative"></div>
+          <span class="text-xs font-bold text-slate-700">ドレミ表示</span>
+        </label>
+
+        <!-- PCキー表示トグル -->
+        <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
+          <input id="toggleKeyLabel" type="checkbox" checked class="sr-only peer" />
+          <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 relative"></div>
+          <span class="text-xs font-bold text-slate-700">PCキー表示</span>
+        </label>
+
+        <!-- 鍵盤サイズ（スマホ・タブレット向け拡大） -->
+        <div class="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200/70">
+          <button type="button" data-zoom="fit" class="zoom-btn px-2 py-0.5 rounded-md text-[11px] font-bold bg-white text-slate-800 shadow-xs">全体表示</button>
+          <button type="button" data-zoom="large" class="zoom-btn px-2 py-0.5 rounded-md text-[11px] font-bold text-slate-600">大きめ</button>
+        </div>
+      </div>
+
+      <!-- PCキーボード位置シフト -->
+      <div class="flex items-center gap-1.5">
+        <span class="text-[11px] font-bold text-slate-500 hidden sm:inline">⌨️ キー位置:</span>
+        <div class="inline-flex rounded-xl bg-slate-100 p-0.5 border border-slate-200/70">
+          <button type="button" data-shift="0" class="shift-btn px-2 py-1 rounded-lg text-[11px] font-bold text-slate-600 hover:text-slate-900 transition">低音(ファ↓〜)</button>
+          <button type="button" data-shift="4" class="shift-btn px-2 py-1 rounded-lg text-[11px] font-extrabold bg-white text-sky-600 shadow-xs transition">中音(ド〜)</button>
+          <button type="button" data-shift="8" class="shift-btn px-2 py-1 rounded-lg text-[11px] font-bold text-slate-600 hover:text-slate-900 transition">高音(ソ〜ド↑↑)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. 鍵盤ハーモニカ本体UI（32鍵盤：F3 〜 C6） -->
+    <section class="pianica-case rounded-3xl p-3 sm:p-5 flex-1 flex flex-col justify-between min-h-[270px] sm:min-h-[320px] relative overflow-hidden">
+      <!-- 本体上部装飾バー（ネームプレート ＆ 吹き口ホースイラスト） -->
+      <div class="flex items-center justify-between mb-2.5 px-1">
+        <!-- 左側：吹き口（唄口・ホース）ワンポイント -->
+        <div class="flex items-center gap-2.5">
+          <div id="mouthpieceVisual" class="flex items-center bg-white/95 px-3 py-1 rounded-full shadow-sm border border-white/60 transition-transform">
+            <!-- 吹き口ホースSVG -->
+            <svg class="w-8 h-5 text-sky-500 mr-1.5" viewBox="0 0 48 24" fill="none">
+              <path d="M2 18 C10 18, 12 6, 22 6 L34 6" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+              <rect x="33" y="3" width="12" height="6" rx="2" fill="#facc15" stroke="#ca8a04" stroke-width="1.2"/>
+            </svg>
+            <span class="text-[11px] font-extrabold text-slate-700 tracking-wide">MELODION / PIANICA 32</span>
+          </div>
+          <span id="activeBreathIndicator" class="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/25 text-white text-[11px] font-bold">
+            <span class="w-2 h-2 rounded-full bg-yellow-300"></span> 発音中
+          </span>
+        </div>
+
+        <!-- 右側：音域ガイド -->
+        <div class="text-white/90 text-[11px] font-bold bg-black/15 px-3 py-1 rounded-full">
+          32鍵盤（F3 〜 C6）
+        </div>
+      </div>
+
+      <!-- 鍵盤ベッド（白いフレーム内に32鍵盤を配置） -->
+      <div class="bg-slate-900/90 p-2 sm:p-3 rounded-2xl shadow-inner flex-1 flex flex-col">
+        <!-- 鍵盤上の「ここ！」ガイドマーカー帯 -->
+        <div id="keyboardScrollContainer" class="keyboard-scroll overflow-x-auto overflow-y-hidden flex-1 flex flex-col relative pb-1">
+          <div id="keyboardStage" class="relative flex-1 min-h-[195px] sm:min-h-[235px] select-none" style="width: 100%; min-width: 680px;">
+            <!-- 白鍵レイヤーと黒鍵レイヤーをJSで精密描画 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- クリアお祝いオーバーレイ（練習モード完走時） -->
+      <div id="clearOverlay" class="hidden absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-20 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl border-4 border-yellow-300 transform transition-all">
+          <div class="text-4xl mb-2">🎉✨🎹✨🎉</div>
+          <h2 class="text-xl font-extrabold text-slate-800 mb-1">最後までひけたね！</h2>
+          <p id="clearSongNameText" class="text-sm font-bold text-slate-500 mb-4">「きらきら星」クリアおめでとう！</p>
+          <div class="flex gap-2 justify-center">
+            <button id="replayAfterClearBtn" type="button" class="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-extrabold text-sm shadow transition">
+              もういちど弾く
+            </button>
+            <button id="closeClearOverlayBtn" type="button" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition">
+              とじる
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- トースト通知（alertの代替） -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- 「＋ 楽譜を入れる」モーダル -->
+  <div id="scoreModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl border border-slate-200 my-auto max-h-[92vh] overflow-y-auto flex flex-col gap-4">
+      <!-- モーダルヘッダー -->
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div>
+          <h2 id="scoreModalTitle" class="text-lg sm:text-xl font-extrabold text-slate-800">🎼 新しい楽譜を入れる</h2>
+          <p class="text-xs text-slate-500">ドレミの文字を入れるか、鍵盤を弾いて好きな曲を作れます！</p>
+        </div>
+        <button id="closeScoreModalBtn" type="button" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 font-bold">✕</button>
+      </div>
+
+      <!-- 曲名入力 -->
+      <div>
+        <label for="customSongTitleInput" class="block text-xs font-extrabold text-slate-700 mb-1">曲のタイトル</label>
+        <input id="customSongTitleInput" type="text" placeholder="例：さんぽ、パプリカ、オリジナル曲" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-sky-400" />
+      </div>
+
+      <!-- 入力方法ショートカット（鍵盤ステップ録音起動） -->
+      <div class="flex flex-wrap items-center justify-between gap-2 bg-sky-50 p-3 rounded-2xl border border-sky-200/70">
+        <div class="text-xs text-sky-900">
+          <span class="font-extrabold">💡 カンタン入力:</span> 下の鍵盤を実際に押して楽譜を作ることもできます
+        </div>
+        <button id="startStepRecordBtn" type="button" class="px-3.5 py-1.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-extrabold shadow-sm transition flex items-center gap-1.5">
+          <span>🎹 鍵盤を弾いて入力</span>
+        </button>
+      </div>
+
+      <!-- タップ入力補助パレット -->
+      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200/80 flex flex-col gap-2">
+        <div class="flex flex-wrap items-center justify-between gap-1.5">
+          <span class="text-xs font-extrabold text-slate-600">👆 タップでドレミ追加:</span>
+          <!-- オクターブ選択タブ -->
+          <div class="inline-flex bg-white p-0.5 rounded-lg border border-slate-200 text-xs">
+            <button type="button" data-pad-oct="low" class="pad-oct-btn px-2 py-0.5 rounded-md font-bold text-slate-600">低い音 (↓)</button>
+            <button type="button" data-pad-oct="mid" class="pad-oct-btn px-2 py-0.5 rounded-md font-extrabold bg-sky-500 text-white">ふつう (真ん中)</button>
+            <button type="button" data-pad-oct="high" class="pad-oct-btn px-2 py-0.5 rounded-md font-bold text-slate-600">高い音 (↑)</button>
+          </div>
+        </div>
+
+        <!-- 音階ボタン群 -->
+        <div id="notePaletteButtons" class="grid grid-cols-6 sm:grid-cols-12 gap-1">
+          <!-- JSでオクターブに応じたボタンを描画 -->
+        </div>
+
+        <!-- 記号・編集ボタン -->
+        <div class="flex flex-wrap gap-1.5 pt-1">
+          <button type="button" data-insert-token="ー" class="pad-symbol-btn px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 border border-slate-300 text-xs font-extrabold text-slate-700">ー (のばす)</button>
+          <button type="button" data-insert-token="休" class="pad-symbol-btn px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 border border-slate-300 text-xs font-extrabold text-slate-700">休 (やすみ)</button>
+          <button type="button" data-insert-token="ド↑↑" class="pad-symbol-btn px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 border border-slate-300 text-xs font-extrabold text-indigo-700">一番高いド (ド↑↑)</button>
+          <button type="button" data-insert-token="\n" class="pad-symbol-btn px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 border border-slate-300 text-xs font-bold text-slate-600">改行</button>
+          <button id="padBackspaceBtn" type="button" class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 border border-rose-200 text-xs font-bold text-rose-600 ml-auto">⌫ 1つ消す</button>
+          <button id="padClearBtn" type="button" class="px-2.5 py-1 rounded-lg bg-slate-200 hover:bg-slate-300 text-xs font-bold text-slate-700">クリア</button>
+        </div>
+      </div>
+
+      <!-- ドレミテキストエリア -->
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <label for="customScoreTextarea" class="text-xs font-extrabold text-slate-700">ドレミ楽譜テキスト</label>
+          <span class="text-[11px] text-slate-400">例: ド レ ミ ファ ソ ラ シ ド↑ ／ 高いド ／ 低いソ ／ ファ#</span>
+        </div>
+        <textarea id="customScoreTextarea" rows="4" placeholder="ここにドレミを入力してください（例：ド ド ソ ソ ラ ラ ソ ー ファ ファ ミ ミ レ レ ド ー）" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-bold leading-relaxed focus:outline-none focus:ring-2 focus:ring-sky-400"></textarea>
+      </div>
+
+      <!-- リアルタイム解析プレビュー -->
+      <div class="bg-slate-50 rounded-2xl p-3 border border-slate-200/80">
+        <div class="flex items-center justify-between mb-1.5">
+          <span id="parseStatusLabel" class="text-xs font-extrabold text-slate-600">プレビュー（0音）</span>
+          <button id="previewPlayBtn" type="button" class="px-3 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-extrabold shadow-xs transition">
+            🔊 試聴する
+          </button>
+        </div>
+        <div id="modalPreviewRibbon" class="flex flex-wrap gap-1 max-h-24 overflow-y-auto p-1">
+          <span class="text-xs text-slate-400">ドレミを入力するとここに音符が表示されます</span>
+        </div>
+      </div>
+
+      <!-- モーダルフッター -->
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+        <button id="cancelScoreModalBtn" type="button" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-bold transition">
+          キャンセル
+        </button>
+        <button id="saveCustomScoreBtn" type="button" class="px-5 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs sm:text-sm font-extrabold shadow-md transition">
+          💾 保存して練習する
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 削除確認カスタムモーダル（confirm()の代替） -->
+  <div id="deleteConfirmModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-slate-200 text-center">
+      <div class="text-3xl mb-2">🗑️</div>
+      <h3 class="text-base font-extrabold text-slate-800 mb-1">この楽譜を削除しますか？</h3>
+      <p id="deleteTargetName" class="text-xs font-bold text-slate-500 mb-5">「マイソング」を削除すると元に戻せません。</p>
+      <div class="flex justify-center gap-2">
+        <button id="cancelDeleteBtn" type="button" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">やめる</button>
+        <button id="confirmDeleteBtn" type="button" class="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-extrabold shadow">削除する</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * ============================================================================
+     * 1. Web Audio API 鍵盤ハーモニカ（リード楽器）サウンドエンジン
+     * ============================================================================
+     */
+    class PianicaAudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.masterGain = null;
+        this.compressor = null;
+        this.activeVoices = new Map(); // midi -> voice object
+        this.volume = 0.75;
+        this.timbre = 'standard'; // 'standard' | 'soft' | 'accordion'
+      }
+
+      // ユーザー操作時にAudioContextを初期化・再開
+      ensureContext() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioCtx();
+
+          // 和音演奏時の音割れを防ぐコンプレッサー
+          this.compressor = this.ctx.createDynamicsCompressor();
+          this.compressor.threshold.setValueAtTime(-16, this.ctx.currentTime);
+          this.compressor.knee.setValueAtTime(12, this.ctx.currentTime);
+          this.compressor.ratio.setValueAtTime(4, this.ctx.currentTime);
+          this.compressor.attack.setValueAtTime(0.005, this.ctx.currentTime);
+          this.compressor.release.setValueAtTime(0.15, this.ctx.currentTime);
+
+          this.masterGain = this.ctx.createGain();
+          this.masterGain.gain.setValueAtTime(this.volume * 0.45, this.ctx.currentTime);
+
+          this.compressor.connect(this.masterGain);
+          this.masterGain.connect(this.ctx.destination);
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      setVolume(val) {
+        this.volume = Math.max(0, Math.min(1, val));
+        if (this.masterGain && this.ctx) {
+          this.masterGain.gain.setTargetAtTime(this.volume * 0.45, this.ctx.currentTime, 0.02);
+        }
+      }
+
+      setTimbre(timbre) {
+        this.timbre = timbre;
+      }
+
+      midiToFreq(midi) {
+        return 440 * Math.pow(2, (midi - 69) / 12);
+      }
+
+      // 指定MIDIノートの音を鳴らし始める（押している間持続）
+      noteOn(midi) {
+        this.ensureContext();
+        if (this.activeVoices.has(midi)) return;
+
+        const now = this.ctx.currentTime;
+        const freq = this.midiToFreq(midi);
+
+        // ボイス全体のエンベロープ用Gain
+        const voiceGain = this.ctx.createGain();
+        voiceGain.gain.setValueAtTime(0.0001, now);
+
+        // リード楽器らしい倍音整形フィルター（ローパス＋フォルマント感）
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+
+        // 音色プリセットごとのパラメータ設定
+        let attackTime = 0.028;
+        let sawLevel = 0.45;
+        let triLevel = 0.45;
+        let sqLevel = 0.18;
+        let detuneCents = 4;
+        let baseCutoff = freq * 4.2;
+        let peakCutoff = freq * 7.5;
+        let filterQ = 2.2;
+
+        if (this.timbre === 'soft') {
+          // やわらか（メロディオン風）
+          attackTime = 0.04;
+          sawLevel = 0.25;
+          triLevel = 0.65;
+          sqLevel = 0.08;
+          detuneCents = 2;
+          baseCutoff = freq * 2.8;
+          peakCutoff = freq * 4.5;
+          filterQ = 1.2;
+        } else if (this.timbre === 'accordion') {
+          // アコーディオン風（ミュゼットデチューン強め）
+          attackTime = 0.032;
+          sawLevel = 0.50;
+          triLevel = 0.30;
+          sqLevel = 0.25;
+          detuneCents = 11;
+          baseCutoff = freq * 4.8;
+          peakCutoff = freq * 8.2;
+          filterQ = 2.6;
+        }
+
+        // 高音域でフィルターが極端に高くなりすぎないよう制限
+        baseCutoff = Math.min(baseCutoff, 5200);
+        peakCutoff = Math.min(peakCutoff, 7500);
+
+        filter.Q.setValueAtTime(filterQ, now);
+        filter.frequency.setValueAtTime(baseCutoff * 0.7, now);
+        // 息を吹き込んだ瞬間の明るい立ち上がり
+        filter.frequency.exponentialRampToValueAtTime(peakCutoff, now + attackTime + 0.03);
+        filter.frequency.exponentialRampToValueAtTime(baseCutoff, now + attackTime + 0.22);
+
+        // オシレーター1: Sawtooth（金属リードの豊かな倍音）
+        const osc1 = this.ctx.createOscillator();
+        osc1.type = 'sawtooth';
+        osc1.frequency.setValueAtTime(freq, now);
+        const gain1 = this.ctx.createGain();
+        gain1.gain.setValueAtTime(sawLevel, now);
+
+        // オシレーター2: Triangle（基音の温かみと芯）
+        const osc2 = this.ctx.createOscillator();
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(freq, now);
+        const gain2 = this.ctx.createGain();
+        gain2.gain.setValueAtTime(triLevel, now);
+
+        // オシレーター3: Square/Detuned（わずかなリードの揺らぎ・厚み）
+        const osc3 = this.ctx.createOscillator();
+        osc3.type = this.timbre === 'accordion' ? 'sawtooth' : 'square';
+        osc3.frequency.setValueAtTime(freq, now);
+        osc3.detune.setValueAtTime(detuneCents, now);
+        const gain3 = this.ctx.createGain();
+        gain3.gain.setValueAtTime(sqLevel, now);
+
+        // 息の自然なビブラート（LFO）
+        const lfo = this.ctx.createOscillator();
+        lfo.type = 'sine';
+        lfo.frequency.setValueAtTime(4.8, now);
+        const lfoGain = this.ctx.createGain();
+        lfoGain.gain.setValueAtTime(0, now);
+        // 0.25秒後からゆっくりビブラートがかかる
+        lfoGain.gain.linearRampToValueAtTime(0, now + 0.25);
+        lfoGain.gain.linearRampToValueAtTime(3.5, now + 0.7);
+
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc1.frequency);
+        lfoGain.connect(osc2.frequency);
+
+        // 接続
+        osc1.connect(gain1);
+        osc2.connect(gain2);
+        osc3.connect(gain3);
+
+        gain1.connect(filter);
+        gain2.connect(filter);
+        gain3.connect(filter);
+
+        filter.connect(voiceGain);
+        voiceGain.connect(this.compressor);
+
+        // ADSR エンベロープ（アタック〜サステイン）
+        voiceGain.gain.linearRampToValueAtTime(1.0, now + attackTime);
+        voiceGain.gain.linearRampToValueAtTime(0.86, now + attackTime + 0.12);
+
+        osc1.start(now);
+        osc2.start(now);
+        osc3.start(now);
+        lfo.start(now);
+
+        this.activeVoices.set(midi, {
+          osc1, osc2, osc3, lfo, voiceGain
+        });
+      }
+
+      // 鍵盤を離したときに音を止める
+      noteOff(midi) {
+        const voice = this.activeVoices.get(midi);
+        if (!voice || !this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const releaseTime = 0.075;
+
+        voice.voiceGain.gain.cancelScheduledValues(now);
+        voice.voiceGain.gain.setValueAtTime(Math.max(voice.voiceGain.gain.value, 0.001), now);
+        voice.voiceGain.gain.exponentialRampToValueAtTime(0.0001, now + releaseTime);
+
+        setTimeout(() => {
+          try {
+            voice.osc1.stop();
+            voice.osc2.stop();
+            voice.osc3.stop();
+            voice.lfo.stop();
+            voice.osc1.disconnect();
+            voice.osc2.disconnect();
+            voice.osc3.disconnect();
+            voice.lfo.disconnect();
+            voice.voiceGain.disconnect();
+          } catch (e) {
+            // 既に停止済みの場合は無視
+          }
+        }, (releaseTime + 0.03) * 1000);
+
+        this.activeVoices.delete(midi);
+      }
+
+      // すべての音を即座に停止
+      stopAll() {
+        for (const midi of Array.from(this.activeVoices.keys())) {
+          this.noteOff(midi);
+        }
+      }
+    }
+
+    /**
+     * ============================================================================
+     * 2. 32鍵盤（F3〜C6）データ定義 ＆ ドレミ楽譜パーサー
+     * ============================================================================
+     */
+    const NOTE_NAMES_JP = ['ド', 'ド#', 'レ', 'レ#', 'ミ', 'ファ', 'ファ#', 'ソ', 'ソ#', 'ラ', 'ラ#', 'シ'];
+
+    // F3(53) 〜 C6(84) の32鍵盤マスターデータ生成
+    const KEYS_DATA = [];
+    let whiteKeyCounter = 0;
+    for (let midi = 53; midi <= 84; midi++) {
+      const pitchClass = midi % 12;
+      const octave = Math.floor(midi / 12) - 1; // MIDI 60 = C4
+      const isBlack = [1, 3, 6, 8, 10].includes(pitchClass);
+      const baseName = NOTE_NAMES_JP[pitchClass];
+
+      // オクターブ記号（C4〜B4を基準とし、低い音に↓、高い音に↑、C6に↑↑）
+      let octSuffix = '';
+      if (octave === 3) octSuffix = '↓';
+      else if (octave === 5) octSuffix = '↑';
+      else if (octave >= 6) octSuffix = '↑↑';
+
+      const displayName = `${baseName}${octSuffix}`;
+
+      KEYS_DATA.push({
+        midi,
+        pitchClass,
+        octave,
+        isBlack,
+        baseName,
+        octSuffix,
+        displayName,
+        whiteIndex: isBlack ? whiteKeyCounter - 1 : whiteKeyCounter
+      });
+
+      if (!isBlack) {
+        whiteKeyCounter++;
+      }
+    }
+    const TOTAL_WHITE_KEYS = whiteKeyCounter; // 19白鍵
+
+    // 内蔵プリセット曲（6曲）
+    const PRESET_SONGS = [
+      {
+        id: 'preset_twinkle',
+        title: 'きらきら星',
+        isPreset: true,
+        scoreText: 'ド ド ソ ソ ラ ラ ソ ー ファ ファ ミ ミ レ レ ド ー ソ ソ ファ ファ ミ ミ レ ー ソ ソ ファ ファ ミ ミ レ ー ド ド ソ ソ ラ ラ ソ ー ファ ファ ミ ミ レ レ ド ー'
+      },
+      {
+        id: 'preset_tulip',
+        title: 'チューリップ',
+        isPreset: true,
+        scoreText: 'ド レ ミ ー ド レ ミ ー ソ ミ レ ド レ ミ レ ー ド レ ミ ー ド レ ミ ー ソ ミ レ ド レ ミ ド ー ソ ソ ミ ソ ラ ラ ソ ー ミ ミ レ レ ド ー'
+      },
+      {
+        id: 'preset_frog',
+        title: 'カエルの合唱',
+        isPreset: true,
+        scoreText: 'ド レ ミ ファ ミ レ ド ー ミ ファ ソ ラ ソ ファ ミ ー ド ー ド ー ド ー ド ー ド レ ミ ファ ミ レ ド ー'
+      },
+      {
+        id: 'preset_saints',
+        title: '聖者の行進',
+        isPreset: true,
+        scoreText: 'ド ミ ファ ソ ー ド ミ ファ ソ ー ド ミ ファ ソ ミ ド ミ レ ー ミ ミ レ ド ド ミ ソ ソ ファ ー ミ ファ ソ ミ ド レ ド ー'
+      },
+      {
+        id: 'preset_ode_to_joy',
+        title: '喜びの歌（交響曲第9番）',
+        isPreset: true,
+        scoreText: 'ミ ミ ファ ソ ソ ファ ミ レ ド ド レ ミ ミ ー レ レ ー ミ ミ ファ ソ ソ ファ ミ レ ド ド レ ミ レ ー ド ド ー'
+      },
+      {
+        id: 'preset_mary',
+        title: 'メリーさんの羊',
+        isPreset: true,
+        scoreText: 'ミ レ ド レ ミ ミ ミ ー レ レ レ ー ミ ソ ソ ー ミ レ ド レ ミ ミ ミ ミ レ レ ミ レ ド ー'
+      }
+    ];
+
+    /**
+     * 柔軟なドレミテキストパーサー
+     * 「ド」「高いド」「低いソ」「ド↑」「ド↓」「ド↑↑」「ファ#」「シ♭」「ー」「休」などを解析
+     */
+    function parseDoremiText(rawText) {
+      if (!rawText || !rawText.trim()) return [];
+
+      // 全角英数字・記号の正規化
+      let normalized = rawText
+        .replace(/＃/g, '#')
+        .replace(/♯/g, '#')
+        .replace(/♭/g, 'b')
+        .replace(/－|―|—|〜/g, 'ー')
+        .replace(/[　、，,/|・\r\n]+/g, ' ');
+
+      // トークン抽出用正規表現（スペースがなくても連続ドレミを切り出せる）
+      const tokenRegex = /(一番高い|いちばんたかい|高い|たかい|低い|ひくい)?(ド|レ|ミ|ファ|ソ|ラ|シ)(#|b)?(↑↑|↑|↓)?|(ー)|(休)/g;
+
+      const pitchMap = {
+        'ド': 0,
+        'レ': 2,
+        'ミ': 4,
+        'ファ': 5,
+        'ソ': 7,
+        'ラ': 9,
+        'シ': 11
+      };
+
+      const notes = [];
+      let match;
+
+      while ((match = tokenRegex.exec(normalized)) !== null) {
+        const [full, prefix, noteName, accidental, arrow, extendSymbol, restSymbol] = match;
+
+        if (extendSymbol) {
+          // 前の音を伸ばす「ー」
+          notes.push({
+            type: 'extend',
+            label: 'ー',
+            midi: null
+          });
+          continue;
+        }
+
+        if (restSymbol) {
+          // 休符「休」
+          notes.push({
+            type: 'rest',
+            label: '休',
+            midi: null
+          });
+          continue;
+        }
+
+        if (noteName) {
+          let semitone = pitchMap[noteName];
+          if (accidental === '#') semitone += 1;
+          if (accidental === 'b') semitone -= 1;
+
+          // デフォルトオクターブは4（真ん中のド C4 = 60）
+          let octave = 4;
+          if (prefix === '低い' || prefix === 'ひくい' || arrow === '↓') {
+            octave = 3;
+          } else if (prefix === '一番高い' || prefix === 'いちばんたかい' || arrow === '↑↑') {
+            octave = 6;
+          } else if (prefix === '高い' || prefix === 'たかい' || arrow === '↑') {
+            octave = 5;
+          }
+
+          let midi = (octave + 1) * 12 + semitone;
+
+          // 32鍵盤の範囲（F3=53 〜 C6=84）に自動クランプして安全に鳴らす
+          if (midi < 53) midi = 53;
+          if (midi > 84) midi = 84;
+
+          const keyInfo = KEYS_DATA.find(k => k.midi === midi);
+          notes.push({
+            type: 'note',
+            midi,
+            label: keyInfo ? keyInfo.displayName : noteName
+          });
+        }
+      }
+
+      return notes;
+    }
+
+    /**
+     * ============================================================================
+     * 3. アプリケーション状態管理 ＆ UIコントローラー
+     * ============================================================================
+     */
+    const audio = new PianicaAudioEngine();
+
+    const state = {
+      mode: 'free', // 'free' | 'guide' | 'auto'
+      songs: [],
+      currentSongId: 'preset_twinkle',
+      parsedNotes: [],
+      stepIndex: 0, // 現在の楽譜インデックス
+      isAutoPlaying: false,
+      autoPlayTimer: null,
+      bpm: 105,
+      showDoremi: true,
+      showKeyLabel: true,
+      keyShiftWhiteIndex: 4, // デフォルトは4（C4＝真ん中のドから開始）
+      zoomMode: 'fit', // 'fit' | 'large'
+      isMouseDown: false,
+      mouseActiveMidi: null,
+      touchActiveMidis: new Set(),
+      keyboardActiveMidis: new Map(), // code -> midi
+      isStepRecording: false,
+      editingSongId: null,
+      padOctave: 'mid',
+      pendingDeleteId: null
+    };
+
+    // PCキーボードのマッピング定義（下段＝白鍵、上段＝右上の黒鍵）
+    const WHITE_KEY_CODES = [
+      { code: 'KeyA', label: 'A' },
+      { code: 'KeyS', label: 'S' },
+      { code: 'KeyD', label: 'D' },
+      { code: 'KeyF', label: 'F' },
+      { code: 'KeyG', label: 'G' },
+      { code: 'KeyH', label: 'H' },
+      { code: 'KeyJ', label: 'J' },
+      { code: 'KeyK', label: 'K' },
+      { code: 'KeyL', label: 'L' },
+      { code: 'Semicolon', label: ';' },
+      { code: 'Quote', label: "'" }
+    ];
+
+    const BLACK_KEY_CODES = [
+      { code: 'KeyW', label: 'W' },
+      { code: 'KeyE', label: 'E' },
+      { code: 'KeyR', label: 'R' },
+      { code: 'KeyT', label: 'T' },
+      { code: 'KeyY', label: 'Y' },
+      { code: 'KeyU', label: 'U' },
+      { code: 'KeyI', label: 'I' },
+      { code: 'KeyO', label: 'O' },
+      { code: 'KeyP', label: 'P' },
+      { code: 'BracketLeft', label: '[' }
+    ];
+
+    let codeToMidiMap = new Map();
+    let midiToKeyLabelMap = new Map();
+
+    // 現在のシフト位置に応じてPCキー割り当てを再計算
+    function rebuildKeyboardMapping() {
+      codeToMidiMap.clear();
+      midiToKeyLabelMap.clear();
+
+      const whiteKeys = KEYS_DATA.filter(k => !k.isBlack);
+      const startWhiteIdx = state.keyShiftWhiteIndex;
+
+      WHITE_KEY_CODES.forEach((wk, i) => {
+        const targetWhite = whiteKeys[startWhiteIdx + i];
+        if (!targetWhite) return;
+
+        codeToMidiMap.set(wk.code, targetWhite.midi);
+        midiToKeyLabelMap.set(targetWhite.midi, wk.label);
+
+        // この白鍵のすぐ右隣（midi + 1）に黒鍵が存在すれば、対応する上段キーを割り当て
+        const rightBlack = KEYS_DATA.find(k => k.midi === targetWhite.midi + 1 && k.isBlack);
+        if (rightBlack && BLACK_KEY_CODES[i]) {
+          codeToMidiMap.set(BLACK_KEY_CODES[i].code, rightBlack.midi);
+          midiToKeyLabelMap.set(rightBlack.midi, BLACK_KEY_CODES[i].label);
+        }
+      });
+    }
+
+    // トースト通知表示
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      const bgClass = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-slate-800';
+      toast.className = `${bgClass} text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-2xl shadow-lg transition-all duration-300 transform translate-y-2 opacity-0`;
+      toast.textContent = message;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 2600);
+    }
+
+    /**
+     * ============================================================================
+     * 4. 32鍵盤UIの描画と視覚更新
+     * ============================================================================
+     */
+    function renderKeyboard() {
+      const stage = document.getElementById('keyboardStage');
+      stage.innerHTML = '';
+      rebuildKeyboardMapping();
+
+      // ズームモードに応じたステージ幅設定
+      if (state.zoomMode === 'large') {
+        stage.style.width = '1120px';
+      } else {
+        stage.style.width = '100%';
+        stage.style.minWidth = '640px';
+      }
+
+      const whiteWidthPercent = 100 / TOTAL_WHITE_KEYS;
+      const blackWidthPercent = whiteWidthPercent * 0.62;
+
+      // 1. 白鍵を描画
+      KEYS_DATA.filter(k => !k.isBlack).forEach((keyObj, idx) => {
+        const keyEl = document.createElement('div');
+        keyEl.dataset.midi = keyObj.midi;
+        keyEl.className = 'white-key absolute top-0 bottom-0 flex flex-col justify-end items-center pb-2 sm:pb-3 cursor-pointer z-10';
+        keyEl.style.left = `${idx * whiteWidthPercent}%`;
+        keyEl.style.width = `${whiteWidthPercent}%`;
+
+        // ガイド用「ここ！」マーカー
+        const guideMarker = document.createElement('div');
+        guideMarker.className = 'guide-badge hidden absolute top-2 px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[9px] sm:text-[10px] font-extrabold shadow animate-bounce pointer-events-none';
+        guideMarker.textContent = 'ここ!';
+        keyEl.appendChild(guideMarker);
+
+        // PCキーラベル
+        const pcLabel = midiToKeyLabelMap.get(keyObj.midi);
+        const pcBadge = document.createElement('span');
+        pcBadge.className = `pc-key-label text-[10px] sm:text-[11px] font-extrabold px-1.5 py-0.2 rounded bg-slate-200/85 text-slate-600 mb-1 pointer-events-none ${state.showKeyLabel && pcLabel ? '' : 'hidden'}`;
+        pcBadge.textContent = pcLabel || '';
+        keyEl.appendChild(pcBadge);
+
+        // ドレミラベル
+        const doremiSpan = document.createElement('span');
+        const isMiddleC = keyObj.midi === 60;
+        doremiSpan.className = `doremi-label text-xs sm:text-sm font-extrabold pointer-events-none leading-none ${isMiddleC ? 'text-sky-600 underline decoration-2' : 'text-slate-700'} ${state.showDoremi ? '' : 'hidden'}`;
+        doremiSpan.textContent = keyObj.displayName;
+        keyEl.appendChild(doremiSpan);
+
+        stage.appendChild(keyEl);
+      });
+
+      // 2. 黒鍵を描画
+      KEYS_DATA.filter(k => k.isBlack).forEach((keyObj) => {
+        const keyEl = document.createElement('div');
+        keyEl.dataset.midi = keyObj.midi;
+        keyEl.className = 'black-key absolute top-0 h-[58%] flex flex-col justify-end items-center pb-2 cursor-pointer z-20';
+
+        // 対応する左白鍵の右端にまたがるように配置
+        const leftPos = (keyObj.whiteIndex + 1) * whiteWidthPercent - (blackWidthPercent / 2);
+        keyEl.style.left = `${leftPos}%`;
+        keyEl.style.width = `${blackWidthPercent}%`;
+
+        // ガイド用「ここ！」マーカー
+        const guideMarker = document.createElement('div');
+        guideMarker.className = 'guide-badge hidden absolute top-1.5 px-1 py-0.2 rounded-full bg-yellow-300 text-slate-900 text-[8px] font-extrabold shadow animate-bounce pointer-events-none';
+        guideMarker.textContent = '▼';
+        keyEl.appendChild(guideMarker);
+
+        // PCキーラベル
+        const pcLabel = midiToKeyLabelMap.get(keyObj.midi);
+        const pcBadge = document.createElement('span');
+        pcBadge.className = `pc-key-label text-[9px] sm:text-[10px] font-extrabold px-1 rounded bg-slate-700 text-slate-200 mb-1 pointer-events-none ${state.showKeyLabel && pcLabel ? '' : 'hidden'}`;
+        pcBadge.textContent = pcLabel || '';
+        keyEl.appendChild(pcBadge);
+
+        // ドレミラベル（黒鍵は#表記をコンパクトに）
+        const doremiSpan = document.createElement('span');
+        doremiSpan.className = `doremi-label text-[9px] sm:text-[10px] font-bold text-slate-100 text-center leading-tight pointer-events-none ${state.showDoremi ? '' : 'hidden'}`;
+        doremiSpan.textContent = keyObj.displayName;
+        keyEl.appendChild(doremiSpan);
+
+        stage.appendChild(keyEl);
+      });
+
+      updateGuideHighlights();
+    }
+
+    // 鍵盤の押下ビジュアル更新
+    function setKeyVisualPressed(midi, isPressed) {
+      const keyEl = document.querySelector(`[data-midi="${midi}"]`);
+      if (!keyEl) return;
+      if (isPressed) {
+        keyEl.classList.add('active');
+      } else {
+        keyEl.classList.remove('active');
+      }
+
+      // 発音中インジケーターと吹き口の反応
+      const anyActive = audio.activeVoices.size > 0;
+      const breathInd = document.getElementById('activeBreathIndicator');
+      const mouthpiece = document.getElementById('mouthpieceVisual');
+      if (anyActive) {
+        breathInd.classList.remove('hidden');
+        mouthpiece.classList.add('breathing');
+      } else {
+        breathInd.classList.add('hidden');
+        mouthpiece.classList.remove('breathing');
+      }
+    }
+
+    // 発音トリガー（共通処理：音出し＋UI更新＋練習判定＋ステップ録音）
+    function triggerNoteOn(midi, source = 'user') {
+      const keyInfo = KEYS_DATA.find(k => k.midi === midi);
+      if (!keyInfo) return;
+
+      audio.noteOn(midi);
+      setKeyVisualPressed(midi, true);
+
+      document.getElementById('lastPlayedNoteDisplay').textContent = `いま弾いた音: ${keyInfo.displayName}`;
+
+      // ステップ録音モード中の場合、楽譜テキストに追記
+      if (state.isStepRecording && source === 'user') {
+        appendTokenToScoreEditor(keyInfo.displayName);
+      }
+
+      // 「光るガイド練習モード」の判定
+      if (state.mode === 'guide' && source === 'user') {
+        handleGuideModeInput(midi, keyInfo);
+      }
+    }
+
+    function triggerNoteOff(midi) {
+      audio.noteOff(midi);
+      setKeyVisualPressed(midi, false);
+    }
+
+    /**
+     * ============================================================================
+     * 5. 楽譜データ管理・楽譜モニター・練習＆自動再生ロジック
+     * ============================================================================
+     */
+    function loadSongsFromStorage() {
+      let customSongs = [];
+      try {
+        const saved = localStorage.getItem('pianica_custom_songs_v1');
+        if (saved) customSongs = JSON.parse(saved);
+      } catch (e) {
+        customSongs = [];
+      }
+      state.songs = [...PRESET_SONGS, ...customSongs];
+    }
+
+    function saveCustomSongsToStorage() {
+      const customOnly = state.songs.filter(s => !s.isPreset);
+      try {
+        localStorage.setItem('pianica_custom_songs_v1', JSON.stringify(customOnly));
+      } catch (e) {
+        showToast('ブラウザの保存容量がいっぱいです', 'error');
+      }
+    }
+
+    function populateSongSelect() {
+      const select = document.getElementById('songSelect');
+      select.innerHTML = '';
+
+      const presetGroup = document.createElement('optgroup');
+      presetGroup.label = '🎵 内蔵プリセット曲';
+      state.songs.filter(s => s.isPreset).forEach(song => {
+        const opt = document.createElement('option');
+        opt.value = song.id;
+        opt.textContent = song.title;
+        presetGroup.appendChild(opt);
+      });
+      select.appendChild(presetGroup);
+
+      const customSongs = state.songs.filter(s => !s.isPreset);
+      if (customSongs.length > 0) {
+        const customGroup = document.createElement('optgroup');
+        customGroup.label = '⭐ マイ楽譜（保存した曲）';
+        customSongs.forEach(song => {
+          const opt = document.createElement('option');
+          opt.value = song.id;
+          opt.textContent = song.title;
+          customGroup.appendChild(opt);
+        });
+        select.appendChild(customGroup);
+      }
+
+      select.value = state.currentSongId;
+      updateCustomSongButtons();
+    }
+
+    function updateCustomSongButtons() {
+      const song = state.songs.find(s => s.id === state.currentSongId);
+      const actionsEl = document.getElementById('customSongActions');
+      if (song && !song.isPreset) {
+        actionsEl.classList.remove('hidden');
+        actionsEl.classList.add('flex');
+      } else {
+        actionsEl.classList.add('hidden');
+        actionsEl.classList.remove('flex');
+      }
+    }
+
+    function selectSong(songId) {
+      stopAutoPlay();
+      state.currentSongId = songId;
+      const song = state.songs.find(s => s.id === songId) || state.songs[0];
+      state.currentSongId = song.id;
+      state.parsedNotes = parseDoremiText(song.scoreText);
+      state.stepIndex = 0;
+
+      // ガイドモードで最初が「ー」や「休」の場合は最初の実音符まで進める
+      if (state.mode === 'guide') {
+        advanceToNextPlayableNote();
+      }
+
+      document.getElementById('currentSongTitleDisplay').textContent = song.title;
+      document.getElementById('songSelect').value = song.id;
+      updateCustomSongButtons();
+      renderScoreRibbon();
+      updatePracticeStatusUI();
+      updateGuideHighlights();
+    }
+
+    // ガイド練習モード用：実際に鍵盤を押すべき次の音符（type === 'note'）までインデックスを進める
+    function advanceToNextPlayableNote() {
+      while (
+        state.stepIndex < state.parsedNotes.length &&
+        state.parsedNotes[state.stepIndex].type !== 'note'
+      ) {
+        state.stepIndex++;
+      }
+    }
+
+    // 楽譜モニター（横スクロールリボン）描画
+    function renderScoreRibbon() {
+      const ribbon = document.getElementById('scoreRibbon');
+      ribbon.innerHTML = '';
+
+      if (state.parsedNotes.length === 0) {
+        ribbon.innerHTML = '<span class="text-xs text-slate-400 px-2">楽譜データがありません</span>';
+        return;
+      }
+
+      state.parsedNotes.forEach((item, idx) => {
+        const chip = document.createElement('div');
+        chip.dataset.step = idx;
+
+        const isCurrent = (state.mode !== 'free') && idx === state.stepIndex;
+        const isPast = (state.mode !== 'free') && idx < state.stepIndex;
+
+        let baseStyle = 'shrink-0 px-2.5 py-1.5 rounded-xl border text-center transition-all duration-150 flex flex-col items-center justify-center min-w-[44px] ';
+        if (isCurrent) {
+          baseStyle += 'bg-amber-300 border-amber-500 text-slate-900 font-extrabold scale-110 shadow-md ring-2 ring-amber-400/50';
+        } else if (isPast) {
+          baseStyle += 'bg-slate-200/70 border-slate-200 text-slate-400 font-bold';
+        } else if (item.type === 'extend') {
+          baseStyle += 'bg-sky-50 border-sky-200 text-sky-600 font-bold';
+        } else if (item.type === 'rest') {
+          baseStyle += 'bg-slate-100 border-slate-200 text-slate-500 font-bold';
+        } else {
+          baseStyle += 'bg-white border-slate-200 text-slate-700 font-extrabold shadow-2xs';
+        }
+
+        chip.className = baseStyle;
+
+        const noteText = document.createElement('span');
+        noteText.className = 'text-xs sm:text-sm leading-tight';
+        noteText.textContent = item.label;
+        chip.appendChild(noteText);
+
+        // PCキーヒントを小さく表示（音符のみ）
+        if (item.type === 'note' && state.showKeyLabel) {
+          const keyChar = midiToKeyLabelMap.get(item.midi);
+          if (keyChar) {
+            const keyHint = document.createElement('span');
+            keyHint.className = `text-[9px] leading-none mt-0.5 ${isCurrent ? 'text-amber-900 font-extrabold' : 'text-slate-400'}`;
+            keyHint.textContent = keyChar;
+            chip.appendChild(keyHint);
+          }
+        }
+
+        ribbon.appendChild(chip);
+      });
+
+      // 現在の音符カードを中央へスムーズスクロール
+      if (state.mode !== 'free') {
+        const activeChip = ribbon.querySelector(`[data-step="${state.stepIndex}"]`);
+        if (activeChip) {
+          activeChip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+      }
+    }
+
+    // 鍵盤の光るガイドハイライト更新
+    function updateGuideHighlights() {
+      // 既存のハイライト解除
+      document.querySelectorAll('.guide-target').forEach(el => el.classList.remove('guide-target'));
+      document.querySelectorAll('.guide-badge').forEach(el => el.classList.add('hidden'));
+
+      if (state.mode === 'free') return;
+
+      const currentItem = state.parsedNotes[state.stepIndex];
+      if (!currentItem || currentItem.type !== 'note') return;
+
+      const targetKeyEl = document.querySelector(`[data-midi="${currentItem.midi}"]`);
+      if (targetKeyEl) {
+        targetKeyEl.classList.add('guide-target');
+        const badge = targetKeyEl.querySelector('.guide-badge');
+        if (badge) badge.classList.remove('hidden');
+
+        // 鍵盤エリアが横スクロールしている場合、光る鍵盤が見える位置へ自動スクロール
+        targetKeyEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }
+
+    // 練習進捗バッジ更新
+    function updatePracticeStatusUI() {
+      const badge = document.getElementById('practiceBadge');
+      const progressText = document.getElementById('practiceProgressText');
+
+      const totalNotes = state.parsedNotes.filter(n => n.type === 'note').length;
+      const completedNotes = state.parsedNotes.slice(0, state.stepIndex).filter(n => n.type === 'note').length;
+      progressText.textContent = `${completedNotes} / ${totalNotes} 音`;
+
+      const currentItem = state.parsedNotes[state.stepIndex];
+      if (!currentItem) {
+        badge.textContent = '🎉 完走！';
+        badge.className = 'px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 text-xs font-extrabold';
+      } else {
+        const keyHint = currentItem.midi ? midiToKeyLabelMap.get(currentItem.midi) : null;
+        badge.textContent = `次の音: ${currentItem.label}${keyHint ? ` [${keyHint}]` : ''}`;
+        badge.className = 'px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 text-xs font-extrabold';
+      }
+    }
+
+    // 光るガイド練習モードの正誤判定
+    function handleGuideModeInput(pressedMidi, keyInfo) {
+      const targetItem = state.parsedNotes[state.stepIndex];
+      if (!targetItem) return;
+
+      const feedbackEl = document.getElementById('feedbackMessage');
+
+      if (pressedMidi === targetItem.midi) {
+        // 正解！
+        feedbackEl.style.opacity = '0';
+        state.stepIndex++;
+        advanceToNextPlayableNote();
+
+        renderScoreRibbon();
+        updatePracticeStatusUI();
+        updateGuideHighlights();
+
+        // 最後まで弾ききったらクリア画面表示
+        if (state.stepIndex >= state.parsedNotes.length) {
+          const song = state.songs.find(s => s.id === state.currentSongId);
+          document.getElementById('clearSongNameText').textContent = `「${song ? song.title : ''}」クリアおめでとう！`;
+          document.getElementById('clearOverlay').classList.remove('hidden');
+        }
+      } else {
+        // 違う鍵盤を押したとき
+        const wrongKeyEl = document.querySelector(`[data-midi="${pressedMidi}"]`);
+        if (wrongKeyEl) {
+          wrongKeyEl.classList.add('key-wrong');
+          setTimeout(() => wrongKeyEl.classList.remove('key-wrong'), 280);
+        }
+        feedbackEl.textContent = `おしい！いま「${keyInfo.displayName}」を押したよ（次は「${targetItem.label}」）`;
+        feedbackEl.style.opacity = '1';
+      }
+    }
+
+    /**
+     * お手本自動再生エンジン
+     */
+    function startAutoPlay() {
+      if (state.isAutoPlaying) return;
+      if (state.parsedNotes.length === 0) return;
+
+      if (state.stepIndex >= state.parsedNotes.length) {
+        state.stepIndex = 0;
+      }
+
+      state.isAutoPlaying = true;
+      updateAutoPlayButtonUI();
+      playAutoStep();
+    }
+
+    function stopAutoPlay() {
+      state.isAutoPlaying = false;
+      if (state.autoPlayTimer) {
+        clearTimeout(state.autoPlayTimer);
+        state.autoPlayTimer = null;
+      }
+      audio.stopAll();
+      document.querySelectorAll('.white-key.active, .black-key.active').forEach(el => el.classList.remove('active'));
+      updateAutoPlayButtonUI();
+    }
+
+    function updateAutoPlayButtonUI() {
+      const btn = document.getElementById('autoPlayToggleBtn');
+      if (state.isAutoPlaying) {
+        btn.textContent = '⏸ 一時停止';
+        btn.className = 'px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold shadow-sm transition';
+      } else {
+        btn.textContent = '▶️ 再生スタート';
+        btn.className = 'px-3.5 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs font-extrabold shadow-sm transition';
+      }
+    }
+
+    function playAutoStep() {
+      if (!state.isAutoPlaying) return;
+
+      if (state.stepIndex >= state.parsedNotes.length) {
+        stopAutoPlay();
+        state.stepIndex = 0;
+        renderScoreRibbon();
+        updatePracticeStatusUI();
+        updateGuideHighlights();
+        showToast('お手本演奏が終わりました 🎵', 'success');
+        return;
+      }
+
+      const currentItem = state.parsedNotes[state.stepIndex];
+      const beatMs = (60 / state.bpm) * 1000;
+
+      // 連続する「ー」の数を数えて音の持続時間を計算
+      let extendCount = 0;
+      while (
+        state.stepIndex + 1 + extendCount < state.parsedNotes.length &&
+        state.parsedNotes[state.stepIndex + 1 + extendCount].type === 'extend'
+      ) {
+        extendCount++;
+      }
+
+      const totalSteps = 1 + extendCount;
+      const totalDurationMs = beatMs * totalSteps;
+
+      renderScoreRibbon();
+      updatePracticeStatusUI();
+      updateGuideHighlights();
+
+      if (currentItem.type === 'note') {
+        const midi = currentItem.midi;
+        triggerNoteOn(midi, 'auto');
+
+        // 次の音と綺麗に区切るため、総再生時間の88%で離鍵
+        const holdMs = totalDurationMs * 0.88;
+        setTimeout(() => {
+          triggerNoteOff(midi);
+        }, holdMs);
+      }
+
+      state.autoPlayTimer = setTimeout(() => {
+        state.stepIndex += totalSteps;
+        playAutoStep();
+      }, totalDurationMs);
+    }
+
+    // 演奏モード切替
+    function setPlayMode(newMode) {
+      stopAutoPlay();
+      state.mode = newMode;
+      state.stepIndex = 0;
+      document.getElementById('feedbackMessage').style.opacity = '0';
+
+      // タブUI更新
+      document.querySelectorAll('.mode-btn').forEach(btn => {
+        if (btn.dataset.mode === newMode) {
+          btn.className = 'mode-btn flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold transition bg-white text-sky-600 shadow-sm';
+        } else {
+          btn.className = 'mode-btn flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition';
+        }
+      });
+
+      const controlBar = document.getElementById('practiceControlBar');
+      const tempoGroup = document.getElementById('tempoControlGroup');
+      const autoBtn = document.getElementById('autoPlayToggleBtn');
+
+      if (newMode === 'free') {
+        controlBar.classList.add('hidden');
+      } else {
+        controlBar.classList.remove('hidden');
+        if (newMode === 'guide') {
+          tempoGroup.classList.add('hidden');
+          tempoGroup.classList.remove('flex');
+          autoBtn.classList.add('hidden');
+          advanceToNextPlayableNote();
+        } else if (newMode === 'auto') {
+          tempoGroup.classList.remove('hidden');
+          tempoGroup.classList.add('flex');
+          autoBtn.classList.remove('hidden');
+        }
+      }
+
+      renderScoreRibbon();
+      updatePracticeStatusUI();
+      updateGuideHighlights();
+    }
+
+    /**
+     * ============================================================================
+     * 6. マウス・マルチタッチ・PCキーボード入力ハンドリング
+     * ============================================================================
+     */
+    function getMidiFromPoint(clientX, clientY) {
+      const el = document.elementFromPoint(clientX, clientY);
+      if (!el) return null;
+      const keyEl = el.closest('[data-midi]');
+      return keyEl ? parseInt(keyEl.dataset.midi, 10) : null;
+    }
+
+    function setupPointerAndTouchEvents() {
+      const stage = document.getElementById('keyboardStage');
+
+      // マウス操作（クリック＆グリッサンド対応）
+      stage.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+        const midi = getMidiFromPoint(e.clientX, e.clientY);
+        if (midi !== null) {
+          state.isMouseDown = true;
+          state.mouseActiveMidi = midi;
+          triggerNoteOn(midi, 'user');
+        }
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!state.isMouseDown) return;
+        const midi = getMidiFromPoint(e.clientX, e.clientY);
+        if (midi !== state.mouseActiveMidi) {
+          if (state.mouseActiveMidi !== null) {
+            triggerNoteOff(state.mouseActiveMidi);
+          }
+          state.mouseActiveMidi = midi;
+          if (midi !== null) {
+            triggerNoteOn(midi, 'user');
+          }
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (state.isMouseDown) {
+          if (state.mouseActiveMidi !== null) {
+            triggerNoteOff(state.mouseActiveMidi);
+            state.mouseActiveMidi = null;
+          }
+          state.isMouseDown = false;
+        }
+      });
+
+      // マルチタッチ操作（和音・スライド演奏対応）
+      function syncTouches(e) {
+        // 拡大ズームモード時に2本指スクロールしたい場合は標準スクロールを邪魔しないよう1本指〜和音タッチを判定
+        const nextMidis = new Set();
+        for (let i = 0; i < e.touches.length; i++) {
+          const t = e.touches[i];
+          const midi = getMidiFromPoint(t.clientX, t.clientY);
+          if (midi !== null) {
+            nextMidis.add(midi);
+          }
+        }
+
+        // 新しく触れられた鍵盤を鳴らす
+        for (const midi of nextMidis) {
+          if (!state.touchActiveMidis.has(midi)) {
+            triggerNoteOn(midi, 'user');
+          }
+        }
+
+        // 指が離れた鍵盤を止める
+        for (const midi of state.touchActiveMidis) {
+          if (!nextMidis.has(midi)) {
+            triggerNoteOff(midi);
+          }
+        }
+
+        state.touchActiveMidis = nextMidis;
+      }
+
+      stage.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        syncTouches(e);
+      }, { passive: false });
+
+      stage.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        syncTouches(e);
+      }, { passive: false });
+
+      stage.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        syncTouches(e);
+      }, { passive: false });
+
+      stage.addEventListener('touchcancel', (e) => {
+        syncTouches(e);
+      });
+    }
+
+    // PCキーボード演奏イベント
+    function setupKeyboardEvents() {
+      window.addEventListener('keydown', (e) => {
+        // テキスト入力中は演奏キーを無効化
+        const activeTag = document.activeElement ? document.activeElement.tagName : '';
+        if (activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT') {
+          return;
+        }
+        // モーダルが開いていてステップ録音中でなければ無効化
+        const modalOpen = !document.getElementById('scoreModal').classList.contains('hidden');
+        if (modalOpen && !state.isStepRecording) return;
+
+        if (e.repeat) return;
+
+        const midi = codeToMidiMap.get(e.code);
+        if (midi !== undefined) {
+          e.preventDefault();
+          state.keyboardActiveMidis.set(e.code, midi);
+          triggerNoteOn(midi, 'user');
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        const midi = state.keyboardActiveMidis.get(e.code);
+        if (midi !== undefined) {
+          state.keyboardActiveMidis.delete(e.code);
+          triggerNoteOff(midi);
+        }
+      });
+
+      // ウィンドウからフォーカスが外れたら全音停止
+      window.addEventListener('blur', () => {
+        state.keyboardActiveMidis.clear();
+        audio.stopAll();
+        document.querySelectorAll('.white-key.active, .black-key.active').forEach(el => el.classList.remove('active'));
+      });
+    }
+
+    /**
+     * ============================================================================
+     * 7. 楽譜追加・編集・ステップ録音モーダル機能
+     * ============================================================================
+     */
+    function renderNotePalette() {
+      const container = document.getElementById('notePaletteButtons');
+      container.innerHTML = '';
+
+      const notes = ['ド', 'ド#', 'レ', 'レ#', 'ミ', 'ファ', 'ファ#', 'ソ', 'ソ#', 'ラ', 'ラ#', 'シ'];
+
+      notes.forEach(n => {
+        // F3〜C6の範囲外（低いド〜低いミ）はスキップ
+        if (state.padOctave === 'low' && ['ド', 'ド#', 'レ', 'レ#', 'ミ'].includes(n)) {
+          return;
+        }
+
+        let token = n;
+        if (state.padOctave === 'low') token = `${n}↓`;
+        if (state.padOctave === 'high') token = `${n}↑`;
+
+        const isSharp = n.includes('#');
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = isSharp
+          ? 'py-1.5 px-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold shadow-2xs transition active:scale-95'
+          : 'py-1.5 px-1 rounded-lg bg-white hover:bg-sky-50 border border-slate-300 text-slate-800 text-xs font-extrabold shadow-2xs transition active:scale-95';
+        btn.textContent = token;
+
+        btn.addEventListener('click', () => {
+          appendTokenToScoreEditor(token);
+          // タップ時に該当の音を軽くプレビュー発音
+          const parsed = parseDoremiText(token);
+          if (parsed[0] && parsed[0].midi) {
+            audio.noteOn(parsed[0].midi);
+            setTimeout(() => audio.noteOff(parsed[0].midi), 220);
+          }
+        });
+
+        container.appendChild(btn);
+      });
+    }
+
+    function appendTokenToScoreEditor(token) {
+      const textarea = document.getElementById('customScoreTextarea');
+      const current = textarea.value;
+      if (token === '\n') {
+        textarea.value = current + '\n';
+      } else {
+        const needsSpace = current.length > 0 && !current.endsWith(' ') && !current.endsWith('\n');
+        textarea.value = current + (needsSpace ? ' ' : '') + token;
+      }
+      updateModalScorePreview();
+    }
+
+    function updateModalScorePreview() {
+      const text = document.getElementById('customScoreTextarea').value;
+      const parsed = parseDoremiText(text);
+      const previewEl = document.getElementById('modalPreviewRibbon');
+      const statusLabel = document.getElementById('parseStatusLabel');
+
+      const noteCount = parsed.filter(n => n.type === 'note').length;
+      statusLabel.textContent = `プレビュー（合計 ${parsed.length} 拍 ／ ${noteCount} 音）`;
+
+      previewEl.innerHTML = '';
+      if (parsed.length === 0) {
+        previewEl.innerHTML = '<span class="text-xs text-slate-400">ドレミを入力するとここに音符が表示されます</span>';
+        return;
+      }
+
+      parsed.forEach(item => {
+        const span = document.createElement('span');
+        span.className = item.type === 'note'
+          ? 'px-2 py-0.5 rounded-md bg-white border border-sky-200 text-sky-900 text-xs font-extrabold'
+          : 'px-2 py-0.5 rounded-md bg-slate-200 text-slate-600 text-xs font-bold';
+        span.textContent = item.label;
+        previewEl.appendChild(span);
+      });
+    }
+
+    function openScoreModal(editSong = null) {
+      stopAutoPlay();
+      const modal = document.getElementById('scoreModal');
+      const titleEl = document.getElementById('scoreModalTitle');
+      const nameInput = document.getElementById('customSongTitleInput');
+      const scoreTextarea = document.getElementById('customScoreTextarea');
+
+      if (editSong) {
+        state.editingSongId = editSong.id;
+        titleEl.textContent = '✏️ 楽譜を編集する';
+        nameInput.value = editSong.title;
+        scoreTextarea.value = editSong.scoreText;
+      } else {
+        state.editingSongId = null;
+        titleEl.textContent = '🎼 新しい楽譜を入れる';
+        nameInput.value = '';
+        scoreTextarea.value = '';
+      }
+
+      renderNotePalette();
+      updateModalScorePreview();
+      modal.classList.remove('hidden');
+    }
+
+    function closeScoreModal() {
+      document.getElementById('scoreModal').classList.add('hidden');
+      stopStepRecording(false);
+    }
+
+    // 鍵盤ステップ録音モード開始・終了
+    function startStepRecording() {
+      state.isStepRecording = true;
+      document.getElementById('scoreModal').classList.add('hidden');
+      document.getElementById('stepRecordBanner').classList.remove('hidden');
+      showToast('鍵盤を弾いてドレミを入力してください！', 'info');
+    }
+
+    function stopStepRecording(reopenModal = true) {
+      state.isStepRecording = false;
+      document.getElementById('stepRecordBanner').classList.add('hidden');
+      if (reopenModal) {
+        document.getElementById('scoreModal').classList.remove('hidden');
+        updateModalScorePreview();
+      }
+    }
+
+    /**
+     * ============================================================================
+     * 8. イベントバインディング ＆ 初期化
+     * ============================================================================
+     */
+    function initApp() {
+      loadSongsFromStorage();
+      populateSongSelect();
+      renderKeyboard();
+      selectSong('preset_twinkle');
+      setupPointerAndTouchEvents();
+      setupKeyboardEvents();
+
+      // 音色変更
+      document.getElementById('timbreSelect').addEventListener('change', (e) => {
+        audio.setTimbre(e.target.value);
+        showToast(`音色を「${e.target.options[e.target.selectedIndex].text}」に変更しました`);
+      });
+
+      // 音量変更
+      document.getElementById('volumeSlider').addEventListener('input', (e) => {
+        audio.setVolume(parseInt(e.target.value, 10) / 100);
+      });
+
+      // カラーテーマ切替
+      document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const theme = btn.dataset.setTheme;
+          document.body.setAttribute('data-theme', theme);
+          document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('ring-2'));
+          btn.classList.add('ring-2');
+        });
+      });
+
+      // 演奏モード切替
+      document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          setPlayMode(btn.dataset.mode);
+        });
+      });
+
+      // 曲選択
+      document.getElementById('songSelect').addEventListener('change', (e) => {
+        selectSong(e.target.value);
+      });
+
+      // BPMテンポ変更
+      document.getElementById('bpmSlider').addEventListener('input', (e) => {
+        state.bpm = parseInt(e.target.value, 10);
+        document.getElementById('bpmValue').textContent = `${state.bpm} BPM`;
+      });
+
+      // お手本自動再生トグル
+      document.getElementById('autoPlayToggleBtn').addEventListener('click', () => {
+        if (state.isAutoPlaying) {
+          stopAutoPlay();
+        } else {
+          startAutoPlay();
+        }
+      });
+
+      // 最初からリセット
+      document.getElementById('resetSongBtn').addEventListener('click', () => {
+        stopAutoPlay();
+        state.stepIndex = 0;
+        if (state.mode === 'guide') advanceToNextPlayableNote();
+        document.getElementById('feedbackMessage').style.opacity = '0';
+        renderScoreRibbon();
+        updatePracticeStatusUI();
+        updateGuideHighlights();
+      });
+
+      // ドレミ表示トグル
+      document.getElementById('toggleDoremi').addEventListener('change', (e) => {
+        state.showDoremi = e.target.checked;
+        document.querySelectorAll('.doremi-label').forEach(el => {
+          el.classList.toggle('hidden', !state.showDoremi);
+        });
+      });
+
+      // PCキー表示トグル
+      document.getElementById('toggleKeyLabel').addEventListener('change', (e) => {
+        state.showKeyLabel = e.target.checked;
+        renderKeyboard();
+        renderScoreRibbon();
+      });
+
+      // 鍵盤ズーム切替
+      document.querySelectorAll('.zoom-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.zoomMode = btn.dataset.zoom;
+          document.querySelectorAll('.zoom-btn').forEach(b => {
+            b.className = b.dataset.zoom === state.zoomMode
+              ? 'zoom-btn px-2 py-0.5 rounded-md text-[11px] font-bold bg-white text-slate-800 shadow-xs'
+              : 'zoom-btn px-2 py-0.5 rounded-md text-[11px] font-bold text-slate-600';
+          });
+          renderKeyboard();
+        });
+      });
+
+      // PCキーボード位置シフト
+      document.querySelectorAll('.shift-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.keyShiftWhiteIndex = parseInt(btn.dataset.shift, 10);
+          document.querySelectorAll('.shift-btn').forEach(b => {
+            b.className = parseInt(b.dataset.shift, 10) === state.keyShiftWhiteIndex
+              ? 'shift-btn px-2 py-1 rounded-lg text-[11px] font-extrabold bg-white text-sky-600 shadow-xs transition'
+              : 'shift-btn px-2 py-1 rounded-lg text-[11px] font-bold text-slate-600 hover:text-slate-900 transition';
+          });
+          renderKeyboard();
+          renderScoreRibbon();
+          updatePracticeStatusUI();
+        });
+      });
+
+      // クリアオーバーレイ操作
+      document.getElementById('replayAfterClearBtn').addEventListener('click', () => {
+        document.getElementById('clearOverlay').classList.add('hidden');
+        state.stepIndex = 0;
+        advanceToNextPlayableNote();
+        renderScoreRibbon();
+        updatePracticeStatusUI();
+        updateGuideHighlights();
+      });
+
+      document.getElementById('closeClearOverlayBtn').addEventListener('click', () => {
+        document.getElementById('clearOverlay').classList.add('hidden');
+      });
+
+      // 楽譜モーダル開閉
+      document.getElementById('openScoreModalBtn').addEventListener('click', () => openScoreModal(null));
+      document.getElementById('closeScoreModalBtn').addEventListener('click', closeScoreModal);
+      document.getElementById('cancelScoreModalBtn').addEventListener('click', closeScoreModal);
+
+      // カスタム曲編集
+      document.getElementById('editSongBtn').addEventListener('click', () => {
+        const song = state.songs.find(s => s.id === state.currentSongId);
+        if (song && !song.isPreset) openScoreModal(song);
+      });
+
+      // カスタム曲削除確認モーダル
+      document.getElementById('deleteSongBtn').addEventListener('click', () => {
+        const song = state.songs.find(s => s.id === state.currentSongId);
+        if (!song || song.isPreset) return;
+        state.pendingDeleteId = song.id;
+        document.getElementById('deleteTargetName').textContent = `「${song.title}」を削除すると元に戻せません。`;
+        document.getElementById('deleteConfirmModal').classList.remove('hidden');
+      });
+
+      document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+        state.pendingDeleteId = null;
+        document.getElementById('deleteConfirmModal').classList.add('hidden');
+      });
+
+      document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+        if (state.pendingDeleteId) {
+          state.songs = state.songs.filter(s => s.id !== state.pendingDeleteId);
+          saveCustomSongsToStorage();
+          populateSongSelect();
+          selectSong('preset_twinkle');
+          showToast('楽譜を削除しました', 'info');
+        }
+        state.pendingDeleteId = null;
+        document.getElementById('deleteConfirmModal').classList.add('hidden');
+      });
+
+      // モーダル内オクターブ切替
+      document.querySelectorAll('.pad-oct-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.padOctave = btn.dataset.padOct;
+          document.querySelectorAll('.pad-oct-btn').forEach(b => {
+            b.className = b.dataset.padOct === state.padOctave
+              ? 'pad-oct-btn px-2 py-0.5 rounded-md font-extrabold bg-sky-500 text-white'
+              : 'pad-oct-btn px-2 py-0.5 rounded-md font-bold text-slate-600';
+          });
+          renderNotePalette();
+        });
+      });
+
+      // パレット記号ボタン
+      document.querySelectorAll('.pad-symbol-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          appendTokenToScoreEditor(btn.dataset.insertToken);
+        });
+      });
+
+      document.getElementById('padBackspaceBtn').addEventListener('click', () => {
+        const ta = document.getElementById('customScoreTextarea');
+        ta.value = ta.value.trimEnd().replace(/\S+$/, '').trimEnd();
+        updateModalScorePreview();
+      });
+
+      document.getElementById('padClearBtn').addEventListener('click', () => {
+        document.getElementById('customScoreTextarea').value = '';
+        updateModalScorePreview();
+      });
+
+      document.getElementById('customScoreTextarea').addEventListener('input', updateModalScorePreview);
+
+      // ステップ録音コントロール
+      document.getElementById('startStepRecordBtn').addEventListener('click', startStepRecording);
+      document.getElementById('recInsertRestBtn').addEventListener('click', () => {
+        appendTokenToScoreEditor('休');
+        showToast('休符を追加しました');
+      });
+      document.getElementById('recInsertExtendBtn').addEventListener('click', () => {
+        appendTokenToScoreEditor('ー');
+        showToast('のばし（ー）を追加しました');
+      });
+      document.getElementById('recBackspaceBtn').addEventListener('click', () => {
+        const ta = document.getElementById('customScoreTextarea');
+        ta.value = ta.value.trimEnd().replace(/\S+$/, '').trimEnd();
+        showToast('1つ戻しました');
+      });
+      document.getElementById('recFinishBtn').addEventListener('click', () => stopStepRecording(true));
+
+      // モーダル内試聴ボタン
+      let previewTimer = null;
+      document.getElementById('previewPlayBtn').addEventListener('click', () => {
+        if (previewTimer) {
+          clearTimeout(previewTimer);
+          previewTimer = null;
+          audio.stopAll();
+        }
+        const parsed = parseDoremiText(document.getElementById('customScoreTextarea').value);
+        if (parsed.length === 0) {
+          showToast('試聴するドレミを入力してください', 'error');
+          return;
+        }
+        let idx = 0;
+        const playNext = () => {
+          if (idx >= parsed.length) return;
+          const item = parsed[idx];
+          let ext = 0;
+          while (idx + 1 + ext < parsed.length && parsed[idx + 1 + ext].type === 'extend') {
+            ext++;
+          }
+          const dur = 380 * (1 + ext);
+          if (item.type === 'note') {
+            audio.noteOn(item.midi);
+            setTimeout(() => audio.noteOff(item.midi), dur * 0.85);
+          }
+          idx += (1 + ext);
+          previewTimer = setTimeout(playNext, dur);
+        };
+        playNext();
+      });
+
+      // カスタム楽譜の保存
+      document.getElementById('saveCustomScoreBtn').addEventListener('click', () => {
+        const titleInput = document.getElementById('customSongTitleInput').value.trim();
+        const scoreText = document.getElementById('customScoreTextarea').value.trim();
+        const parsed = parseDoremiText(scoreText);
+
+        if (parsed.filter(n => n.type === 'note').length === 0) {
+          showToast('ドレミを1音以上入力してください', 'error');
+          return;
+        }
+
+        const songTitle = titleInput || `マイ楽譜 ${state.songs.filter(s => !s.isPreset).length + 1}`;
+
+        if (state.editingSongId) {
+          const target = state.songs.find(s => s.id === state.editingSongId);
+          if (target) {
+            target.title = songTitle;
+            target.scoreText = scoreText;
+          }
+        } else {
+          const newSong = {
+            id: `custom_${Date.now()}`,
+            title: songTitle,
+            isPreset: false,
+            scoreText
+          };
+          state.songs.push(newSong);
+          state.currentSongId = newSong.id;
+        }
+
+        saveCustomSongsToStorage();
+        populateSongSelect();
+        closeScoreModal();
+        selectSong(state.currentSongId);
+
+        // 保存後はすぐに練習できるよう光るガイド練習モードへ切替
+        if (state.mode === 'free') {
+          setPlayMode('guide');
+        }
+        showToast(`「${songTitle}」を保存しました！`, 'success');
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+
+<style>
+.tt-guide { position: fixed; right: 14px; bottom: 14px; z-index: 80; display: flex; align-items: flex-end; gap: 8px; max-width: 330px; font-family: 'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif; }
+.tt-guide img { width: 64px; height: 64px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,.25)); }
+.tt-guide .tt-bubble { background: #fff; border: 2px solid #f59e0b; border-radius: 16px; padding: 8px 12px; font-size: 13px; font-weight: 700; color: #334155; line-height: 1.5; box-shadow: 0 4px 14px rgba(0,0,0,.12); cursor: pointer; }
+.tt-guide .tt-name { display: block; font-size: 11px; color: #b45309; font-weight: 800; margin-bottom: 2px; }
+@media (max-width: 640px) { .tt-guide { max-width: 250px; } .tt-guide img { width: 48px; height: 48px; } }
+</style>
+
+<div class="tt-guide" id="ttGuide">
+  <div class="tt-bubble" id="ttGuideBubble" title="タップすると一言が変わります"><span class="tt-name" id="ttGuideName"></span><span id="ttGuideLine"></span></div>
+  <img id="ttGuideImg" alt="ナビキャラ">
+</div>
+<script>
+(function () {
+  var CHARS = ['riku','sora','kai','saku','tsuki','nami'];
+  var NAMES = {"riku": "りく", "sora": "そら", "kai": "かい", "saku": "さく", "tsuki": "つき", "nami": "なみ"};
+  var LINES = ["光るガイド練習では、次に弾く鍵盤が光るよ。", "鍵盤を押している間、音が鳴り続けるよ。和音も弾けるよ。", "自分の曲も入れられるよ。「＋楽譜を入れる」を押してね。", "鍵盤を弾いて入力すると、ドレミ楽譜が作れるよ。"];
+  var EXPRS = ['01-normal-smile','02-happy','04-idea','10-confident'];
+  var ci = Math.floor(Math.random() * CHARS.length);
+  var li = 0;
+  var img = document.getElementById('ttGuideImg');
+  var nameEl = document.getElementById('ttGuideName');
+  var lineEl = document.getElementById('ttGuideLine');
+  function paint() {
+    var id = CHARS[ci];
+    img.src = 'https://tt-sensei.github.io/navi-character-/assets/web/characters/' + id + '/expressions/' + EXPRS[li % EXPRS.length] + '.webp';
+    img.onerror = function () { document.getElementById('ttGuide').style.display = 'none'; };
+    nameEl.textContent = NAMES[id];
+    lineEl.textContent = LINES[li % LINES.length];
+  }
+  document.getElementById('ttGuideBubble').addEventListener('click', function () {
+    li++;
+    if (li % LINES.length === 0) ci = (ci + 1) % CHARS.length;
+    paint();
+  });
+  paint();
+})();
+</script>
+
+</body>
+</html>
