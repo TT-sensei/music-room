@@ -1504,6 +1504,12 @@
       selectSong('preset_twinkle');
       selectNoteById('C5', false);
 
+      // バックグラウンドやページ離脱時に自動演奏を停止する。
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stopAutoPlay();
+      });
+      window.addEventListener('pagehide', stopAutoPlay);
+
       // ① 音声モード切替（音あり / 消音ガイドのみ）
       document.getElementById('soundToggleBtn').addEventListener('click', () => {
         state.soundEnabled = !state.soundEnabled;
