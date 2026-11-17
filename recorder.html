@@ -109,6 +109,14 @@
       background: #cbd5e1;
       border-radius: 9999px;
     }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
   </style>
 </head>
 <body data-rec-color="cream" class="min-h-screen flex flex-col text-slate-800 selection:bg-sky-200">
