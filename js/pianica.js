@@ -501,10 +501,25 @@
      */
     function makeKeyboardKeyAccessible(keyEl, keyObj) {
       keyEl.setAttribute('role', 'button');
-      keyEl.setAttribute('tabindex', '0');
+      // Tabでは鍵盤群に1か所だけ入り、矢印キーで音ごとに移動する。
+      keyEl.setAttribute('tabindex', keyObj.midi === 60 ? '0' : '-1');
       keyEl.setAttribute('aria-label', keyObj.displayName + 'の鍵盤');
       keyEl.setAttribute('aria-pressed', 'false');
       keyEl.addEventListener('keydown', (e) => {
+        const moves = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: 12, ArrowDown: -12 };
+        if (Object.prototype.hasOwnProperty.call(moves, e.code)) {
+          e.preventDefault();
+          e.stopPropagation();
+          const targetMidi = keyObj.midi + moves[e.code];
+          const nextKey = document.querySelector('#keyboardStage [data-midi="' + targetMidi + '"]');
+          if (nextKey) {
+            keyEl.tabIndex = -1;
+            nextKey.tabIndex = 0;
+            nextKey.focus({ preventScroll: true });
+            nextKey.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+          }
+          return;
+        }
         if (e.code !== 'Enter' && e.code !== 'Space') return;
         e.preventDefault();
         e.stopPropagation();
@@ -1083,6 +1098,9 @@
       stage.addEventListener('pointerdown', (e) => {
         if (e.pointerType === 'mouse' && e.button !== 0) return;
         if (getMidiAtPoint(e.clientX, e.clientY) === null) return;
+        const hit = document.elementFromPoint(e.clientX, e.clientY);
+        const keyEl = hit && hit.closest('[data-midi]');
+        if (keyEl && typeof keyEl.focus === 'function') keyEl.focus({ preventScroll: true });
         updatePointer(e);
         try {
           stage.setPointerCapture(e.pointerId);
@@ -1276,6 +1294,20 @@
       selectSong('preset_twinkle');
       setupPointerAndTouchEvents();
       setupKeyboardEvents();
+
+      // バックグラウンドやページ離脱時に音と自動演奏を確実に停止する。
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          stopAutoPlay();
+          state.pointerActiveMidis.clear();
+          audio.stopAll();
+        }
+      });
+      window.addEventListener('pagehide', () => {
+        stopAutoPlay();
+        state.pointerActiveMidis.clear();
+        audio.stopAll();
+      });
 
       // 音色変更
       document.getElementById('timbreSelect').addEventListener('change', (e) => {
