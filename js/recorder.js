@@ -238,6 +238,7 @@
         this.masterGain = null;
         this.noiseBuffer = null;
         this.enabled = true;
+        this.activeVoices = new Set();
       }
 
       ensureContext() {
@@ -334,10 +335,42 @@
         lfo.start(now);
 
         const stopAt = now + durationSec + 0.03;
-        osc1.stop(stopAt);
-        osc2.stop(stopAt);
-        noiseSrc.stop(stopAt);
-        lfo.stop(stopAt);
+        const sources = [osc1, osc2, noiseSrc, lfo];
+        const voice = { sources, gain: noteGain };
+        const remaining = new Set(sources);
+        const cleanup = () => {
+          this.activeVoices.delete(voice);
+          try { noteGain.disconnect(); } catch (_) {}
+          sources.forEach(source => {
+            try { source.disconnect(); } catch (_) {}
+          });
+        };
+        sources.forEach(source => {
+          source.addEventListener('ended', () => {
+            remaining.delete(source);
+            if (remaining.size === 0) cleanup();
+          }, { once: true });
+        });
+        this.activeVoices.add(voice);
+
+        sources.forEach(source => source.stop(stopAt));
+      }
+
+      // 再生中のリコーダー音を停止（自動再生停止・画面離脱時）
+      stopAll() {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        for (const voice of Array.from(this.activeVoices)) {
+          try {
+            voice.gain.gain.cancelScheduledValues(now);
+            voice.gain.gain.setTargetAtTime(0.0001, now, 0.008);
+            voice.sources.forEach(source => {
+              try { source.stop(now + 0.025); } catch (_) {}
+            });
+          } catch (_) {
+            // すでに停止処理に入った音は無視する。
+          }
+        }
       }
 
       // カウントイン用の優しいクリック音
@@ -1346,6 +1379,7 @@
         state.autoTimer = null;
       }
       document.getElementById('countInDisplay').classList.add('hidden');
+      audio.stopAll();
       updateAutoPlayBtnUI();
     }
 
