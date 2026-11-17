@@ -14,10 +14,19 @@
 
 ## 仕組み
 
-- 音はWeb Audioでその場で合成（外部の音声ファイルなし）
+- 音は実録音サンプル（`assets/audio/` に同梱、詳しくは下記「音源について」）。読み込めない場合はWeb Audioのシンセ音で代替
 - 自分の曲は端末内（localStorage）に保存：リコーダー `soprano_recorder_songs_v1`／鍵盤ハーモニカ `pianica_custom_songs_v1`
 - ナビキャラの表情画像だけ、共通素材サイト（navi-character-）から読み込む
 - リコーダーの運指は運指表（Dolmetsch／American Recorder Society／Yamaha系）と照合済み
+
+## 楽譜ファイル（JSON）の書き出し・読み込み
+
+両アプリとも、曲の選択欄の横に「📤 書き出し」「📥 読み込み」ボタンがあります。
+
+- 書き出し：マイ楽譜をまとめて1つのJSONファイルに保存（マイ楽譜がないときは選択中の曲を1曲だけ保存）。別のタブレットへの移行やバックアップ用
+- 読み込み：JSONファイルを読み込んでマイ楽譜に追加。同名の曲は「（2）」付きで追加
+- 形式：`{ "format": "music-room-song", "version": 1, "songs": [ { "title": "曲名", "score": "ド レ ミ ー" } ] }`（scoreはドレミ表記。単一曲の形や `scoreText` キーでも読み込み可）
+- 他のAIに楽譜ファイルを作ってもらうためのプロンプトは [song-prompt.md](song-prompt.md) にあります（アプリ内には入れていません）
 
 ## 音源について
 
