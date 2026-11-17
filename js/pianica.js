@@ -411,6 +411,7 @@
       zoomMode: 'fit', // 'fit' | 'large'
       pointerActiveMidis: new Map(), // pointerId -> MIDI（タッチ・マウス共通）
       keyboardActiveMidis: new Map(), // code -> midi
+      accessibilityActiveMidi: null, // Tab移動した鍵盤でEnter / Spaceを押している音
       autoNoteOffTimer: null, // 自動演奏中の離鍵予約
       isStepRecording: false,
       editingSongId: null,
@@ -523,15 +524,26 @@
         if (e.code !== 'Enter' && e.code !== 'Space') return;
         e.preventDefault();
         e.stopPropagation();
-        if (!e.repeat) triggerNoteOn(keyObj.midi, 'user');
+        if (!e.repeat) {
+          state.accessibilityActiveMidi = keyObj.midi;
+          triggerNoteOn(keyObj.midi, 'user');
+        }
       });
       keyEl.addEventListener('keyup', (e) => {
         if (e.code !== 'Enter' && e.code !== 'Space') return;
         e.preventDefault();
         e.stopPropagation();
-        triggerNoteOff(keyObj.midi);
+        if (state.accessibilityActiveMidi === keyObj.midi) {
+          state.accessibilityActiveMidi = null;
+          triggerNoteOff(keyObj.midi);
+        }
       });
-      keyEl.addEventListener('blur', () => triggerNoteOff(keyObj.midi));
+      keyEl.addEventListener('blur', () => {
+        if (state.accessibilityActiveMidi === keyObj.midi) {
+          state.accessibilityActiveMidi = null;
+          triggerNoteOff(keyObj.midi);
+        }
+      });
     }
 
     function renderKeyboard() {
@@ -1101,9 +1113,6 @@
       stage.addEventListener('pointerdown', (e) => {
         if (e.pointerType === 'mouse' && e.button !== 0) return;
         if (getMidiAtPoint(e.clientX, e.clientY) === null) return;
-        const hit = document.elementFromPoint(e.clientX, e.clientY);
-        const keyEl = hit && hit.closest('[data-midi]');
-        if (keyEl && typeof keyEl.focus === 'function') keyEl.focus({ preventScroll: true });
         updatePointer(e);
         try {
           stage.setPointerCapture(e.pointerId);
