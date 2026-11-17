@@ -305,6 +305,9 @@
             📥 読み込み
           </button>
           <input id="importSongsFile" type="file" accept=".json,application/json" class="hidden" />
+          <button id="aiPromptBtn" type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm border border-slate-200 transition active:scale-95" title="他のAIに楽譜ファイルを作ってもらうための指示文を表示します">
+            🤖 AIに作ってもらう
+          </button>
         </div>
       </div>
 
@@ -451,6 +454,45 @@
   <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
   <!-- 「＋ 楽譜を入れる」モーダル -->
+  <!-- 「AIに楽譜を作ってもらう」モーダル -->
+  <div id="aiPromptModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl border border-slate-200 my-auto max-h-[92vh] overflow-y-auto flex flex-col gap-4">
+      <div class="flex items-start justify-between border-b border-slate-100 pb-3 gap-2">
+        <div>
+          <h2 class="text-lg sm:text-xl font-extrabold text-slate-800">🤖 AIに楽譜を作ってもらう</h2>
+          <p class="text-xs text-slate-500 mt-1">下の指示文をコピーして、他のAI（ChatGPTなど）に渡してください。作ってもらったJSONファイルを「📥 読み込み」で読み込むと、マイ楽譜に追加されます。</p>
+        </div>
+        <button id="closeAiPromptBtn" type="button" class="w-8 h-8 shrink-0 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 font-bold">✕</button>
+      </div>
+      <textarea id="aiPromptText" readonly rows="18" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-sky-400 bg-slate-50">あなたは小学校の音楽の先生の助手です。学習アプリ「みんなの音楽室（鍵盤ハーモニカ32鍵盤）」で読み込める楽譜ファイルを、JSON形式で作ってください。
+
+【出力形式】
+次の形式のJSONだけを、コードブロックで出力してください（説明文は不要です）。
+
+{
+  "format": "music-room-song",
+  "version": 1,
+  "songs": [
+    { "title": "曲名", "score": "ド レ ミ ファ ー" }
+  ]
+}
+
+【楽譜（score）の書き方】
+・音はドレミで書き、半角スペースで区切ります。
+・使える音：ド レ ミ ファ ソ ラ シ
+・半音は、ファ# のように「#」、シb のように「b」を音の後ろに付けます。
+・長く伸ばす音は「ー」、休符は「休」と書きます。どちらも1拍分として数えます。
+・何も付けない音が基準で、ド＝C4です。「低いド」で1オクターブ下（C3）、「高いド」で1オクターブ上（C5）、「一番高いド」で2オクターブ上（C6）です。使える範囲は 低いファ（F3）〜一番高いド（C6）です。
+・1曲は30〜60音くらいが目安です。小学生が練習しやすい長さにしてください。
+・曲は、著作権の切れた唱歌・童謡・クラシック、またはオリジナルのメロディにしてください。著作権のある曲のメロディをそのまま書き起こすことはしないでください。
+
+【例】
+{ "title": "かえるの合唱", "score": "ド レ ミ ファ ミ レ ド ー ミ ファ ソ ラ ソ ファ ミ ー ド ー" }</textarea>
+      <button id="copyAiPromptBtn" type="button" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-extrabold text-sm shadow-md transition active:scale-95">
+        📋 指示文をコピーする
+      </button>
+    </div>
+  </div>
   <div id="scoreModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
     <div class="bg-white rounded-3xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl border border-slate-200 my-auto max-h-[92vh] overflow-y-auto flex flex-col gap-4">
       <!-- モーダルヘッダー -->
@@ -2140,6 +2182,31 @@
         const file = e.target.files && e.target.files[0];
         if (file) importSongsFromFile(file);
         e.target.value = '';
+      });
+      document.getElementById('aiPromptBtn').addEventListener('click', () => {
+        document.getElementById('aiPromptModal').classList.remove('hidden');
+      });
+      document.getElementById('closeAiPromptBtn').addEventListener('click', () => {
+        document.getElementById('aiPromptModal').classList.add('hidden');
+      });
+      document.getElementById('aiPromptModal').addEventListener('click', (e) => {
+        if (e.target.id === 'aiPromptModal') e.target.classList.add('hidden');
+      });
+      document.getElementById('copyAiPromptBtn').addEventListener('click', async () => {
+        const ta = document.getElementById('aiPromptText');
+        try {
+          await navigator.clipboard.writeText(ta.value);
+          showToast('指示文をコピーしました');
+        } catch (err) {
+          ta.focus();
+          ta.select();
+          try {
+            document.execCommand('copy');
+            showToast('指示文をコピーしました');
+          } catch (e2) {
+            showToast('コピーできませんでした。長押しで選択してコピーしてください', 'error');
+          }
+        }
       });
       document.getElementById('closeScoreModalBtn').addEventListener('click', closeScoreModal);
       document.getElementById('cancelScoreModalBtn').addEventListener('click', closeScoreModal);
