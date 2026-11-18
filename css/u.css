@@ -397,3 +397,13 @@ img, svg { display: block; }
 .z-30 { z-index: 30; }
 .z-40 { z-index: 40; }
 .z-50 { z-index: 50; }
+
+/* 2026-11-18 リコーダー画面のタブレット1画面化で追加したユーティリティ */
+.min-h-\[22px\] { min-height: 22px; }
+.min-h-\[44px\] { min-height: 44px; }
+.h-\[70px\] { height: 70px; }
+.max-w-\[220px\] { max-width: 220px; }
+.mb-0 { margin-bottom: 0; }
+.leading-snug { line-height: 1.375; }
+.space-y-0\.5 > * + * { margin-top: 0.125rem; }
+@media (min-width: 640px) { .sm\:w-44 { width: 11rem; } }

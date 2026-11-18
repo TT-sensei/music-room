@@ -101,13 +101,19 @@
       background: #cbd5e1;
       border-radius: 9999px;
     }
-  </style>
+  
+    /* 1画面化のための追加ユーティリティ（このページ専用） */
+    @media (min-width: 640px) { .sm\:w-auto { width: auto; } }
+    body:has(#practiceControlBar:not(.hidden)) #recorderSvgStage svg { max-height: 224px; }
+    .h-\[62px\] { height: 62px; }
+    .min-h-\[40px\] { min-height: 40px; }
+</style>
 </head>
 <body data-rec-color="cream" class="min-h-screen flex flex-col text-slate-800 selection:bg-sky-200">
 
   <!-- 1. トップヘッダー設定バー -->
   <header class="w-full bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs sticky top-0 z-30">
-    <div class="max-w-7xl mx-auto px-3 sm:px-5 py-2.5 flex flex-wrap items-center justify-between gap-2">
+    <div class="max-w-7xl mx-auto px-3 sm:px-5 py-2 flex flex-wrap items-center justify-between gap-2">
       <!-- アプリタイトル -->
       <a href="index.html" style="text-decoration:none" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-extrabold border border-slate-200">🏠 入り口</a>
         <div class="flex items-center gap-2.5">
@@ -158,20 +164,20 @@
   </header>
 
   <!-- メインコンテンツ -->
-  <main class="flex-1 w-full max-w-7xl mx-auto px-2.5 sm:px-5 py-3 flex flex-col gap-3">
+  <main class="flex-1 w-full max-w-7xl mx-auto px-2.5 sm:px-5 py-2 flex flex-col gap-2">
 
     <!-- 2. 練習モード＆楽譜パネル -->
-    <section class="bg-white rounded-2xl p-3 sm:p-4 shadow-xs border border-slate-200/80 flex flex-col gap-3">
+    <section class="bg-white rounded-2xl p-3 shadow-xs border border-slate-200/80 flex flex-col gap-2">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <!-- 練習モードタブ -->
         <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/70 w-full sm:w-auto">
-          <button type="button" data-mode="free" class="mode-btn flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold transition bg-white text-sky-600 shadow-2xs">
+          <button type="button" data-mode="free" class="mode-btn flex-1 sm:flex-initial px-3 py-1 rounded-lg text-xs sm:text-sm font-extrabold transition bg-white text-sky-600 shadow-2xs">
             🖐️ 自由確認
           </button>
-          <button type="button" data-mode="step" class="mode-btn flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition">
+          <button type="button" data-mode="step" class="mode-btn flex-1 sm:flex-initial px-3 py-1 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition">
             👣 ステップ練習
           </button>
-          <button type="button" data-mode="auto" class="mode-btn flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition">
+          <button type="button" data-mode="auto" class="mode-btn flex-1 sm:flex-initial px-3 py-1 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition">
             ▶️ 自動ガイド再生
           </button>
         </div>
@@ -180,7 +186,7 @@
         <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
           <div class="flex items-center gap-1.5 flex-1 sm:flex-initial">
             <label for="songSelect" class="text-xs font-bold text-slate-500 whitespace-nowrap">曲:</label>
-            <select id="songSelect" class="w-full sm:w-56 bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs sm:text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400">
+            <select id="songSelect" class="w-full sm:w-44 bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs sm:text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400">
               <!-- JSでプリセット＆カスタム曲を生成 -->
             </select>
           </div>
@@ -196,24 +202,24 @@
           </div>
 
           <!-- ＋楽譜を入れる -->
-          <button id="openScoreModalBtn" type="button" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-slate-900 font-extrabold text-xs sm:text-sm shadow-2xs flex items-center gap-1 transition active:scale-95">
+          <button id="openScoreModalBtn" type="button" class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-500 hover:to-orange-500 text-slate-900 font-extrabold text-xs sm:text-sm shadow-2xs flex items-center gap-1 transition active:scale-95">
             <span>＋ 楽譜を入れる</span>
           </button>
-          <button id="exportSongsBtn" type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm border border-slate-200 transition active:scale-95" title="マイ楽譜をJSONファイルに書き出します">
+          <button id="exportSongsBtn" type="button" class="px-2 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm border border-slate-200 transition active:scale-95" title="マイ楽譜をJSONファイルに書き出します">
             📤 書き出し
           </button>
-          <button id="importSongsBtn" type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm border border-slate-200 transition active:scale-95" title="JSONファイルから楽譜を読み込みます">
+          <button id="importSongsBtn" type="button" class="px-2 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm border border-slate-200 transition active:scale-95" title="JSONファイルから楽譜を読み込みます">
             📥 読み込み
           </button>
           <input id="importSongsFile" type="file" accept=".json,application/json" class="hidden" />
-          <button id="aiPromptBtn" type="button" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm border border-slate-200 transition active:scale-95" title="他のAIに楽譜ファイルを作ってもらうための指示文を表示します">
+          <button id="aiPromptBtn" type="button" class="px-2 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm border border-slate-200 transition active:scale-95" title="他のAIに楽譜ファイルを作ってもらうための指示文を表示します">
             🤖 AIに作ってもらう
           </button>
         </div>
       </div>
 
       <!-- モード別コントロールバー（ステップ練習 / 自動ガイド再生時に表示） -->
-      <div id="practiceControlBar" class="hidden pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2.5">
+      <div id="practiceControlBar" class="hidden pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2.5">
         <!-- 進捗＆カウント表示 -->
         <div class="flex items-center gap-2.5">
           <span id="practiceStepBadge" class="px-3 py-1 rounded-xl bg-amber-100 text-amber-900 text-xs sm:text-sm font-extrabold">
@@ -226,10 +232,10 @@
 
         <!-- ステップ練習用：大きな「もどる」「次へ」ボタン（リコーダーを持ちながら操作しやすい） -->
         <div id="stepNavGroup" class="hidden items-center gap-2 w-full sm:w-auto justify-end">
-          <button id="stepPrevBtn" type="button" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs sm:text-sm transition active:scale-95">
+          <button id="stepPrevBtn" type="button" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs sm:text-sm transition active:scale-95">
             ◀ もどる (←)
           </button>
-          <button id="stepNextBtn" type="button" class="flex-1 sm:flex-initial px-6 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-extrabold text-sm sm:text-base shadow-md transition active:scale-95">
+          <button id="stepNextBtn" type="button" class="flex-1 sm:flex-initial px-6 py-2 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-extrabold text-sm sm:text-base shadow-md transition active:scale-95">
             次の音へ ▶ (Space)
           </button>
         </div>
@@ -274,7 +280,7 @@
             下の音階ボタンか穴をクリックして運指を確認できます
           </span>
         </div>
-        <div id="scoreRibbon" class="score-ribbon flex items-center gap-1.5 overflow-x-auto py-1.5 px-1 min-h-[52px]">
+        <div id="scoreRibbon" class="score-ribbon flex items-center gap-1.5 overflow-x-auto py-1 px-1 min-h-[40px]">
           <!-- JSで音符カードを動的生成 -->
         </div>
       </div>
@@ -284,9 +290,9 @@
     <section class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-stretch">
 
       <!-- 左側（7カラム）：おさえる場所（運指）ビジュアルガイド -->
-      <div class="lg:col-span-7 bg-white rounded-3xl p-3 sm:p-4 shadow-xs border border-slate-200/80 flex flex-col justify-between">
+      <div class="lg:col-span-7 bg-white rounded-3xl p-3 shadow-xs border border-slate-200/80 flex flex-col justify-between">
         <!-- リコーダーの向き・表示オプションバー -->
-        <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 mb-2 border-b border-slate-100">
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-2 mb-1 border-b border-slate-100">
           <!-- ① 見方（視点）の向き：正面 vs 自分目線（反転） -->
           <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200/70">
             <button type="button" data-perspective="front" class="perspective-btn px-2.5 py-1 rounded-lg text-xs font-extrabold bg-white text-sky-600 shadow-2xs transition">
@@ -316,7 +322,7 @@
         </div>
 
         <!-- 向き説明＆サミング強調バッジ -->
-        <div class="flex flex-wrap items-center justify-between gap-2 px-1 mb-1 min-h-[28px]">
+        <div class="flex flex-wrap items-center justify-between gap-2 px-1 mb-0 min-h-[22px]">
           <span id="orientationCaption" class="text-xs font-bold text-slate-500">
             📍 正面から見た図（裏穴0は左側）
           </span>
@@ -326,12 +332,12 @@
         </div>
 
         <!-- ソプラノリコーダー SVG 描画ステージ -->
-        <div id="recorderSvgStage" class="flex-1 flex items-center justify-center bg-gradient-to-b from-slate-50/80 to-slate-100/60 rounded-2xl border border-slate-200/60 p-2 min-h-[300px] sm:min-h-[340px] overflow-hidden relative">
+        <div id="recorderSvgStage" class="flex-1 flex items-center justify-center bg-gradient-to-b from-slate-50/80 to-slate-100/60 rounded-2xl border border-slate-200/60 p-2 min-h-[195px] sm:min-h-[235px] overflow-hidden relative">
           <!-- JSで精密SVGを生成 -->
         </div>
 
         <!-- 凡例（おさえる・あける・サミング） -->
-        <div class="flex flex-wrap items-center justify-center gap-4 pt-2.5 mt-2 border-t border-slate-100 text-xs font-bold text-slate-600">
+        <div class="flex flex-wrap items-center justify-center gap-4 pt-2 mt-1 border-t border-slate-100 text-xs font-bold text-slate-600">
           <div class="flex items-center gap-1.5">
             <span class="w-4 h-4 rounded-full bg-slate-800 ring-2 ring-amber-400 inline-block"></span>
             <span>おさえる（閉）</span>
@@ -348,13 +354,13 @@
       </div>
 
       <!-- 右側（5カラム）：音名・五線譜・押し方サマリー・ワンポイントアドバイス -->
-      <div class="lg:col-span-5 bg-white rounded-3xl p-4 sm:p-5 shadow-xs border border-slate-200/80 flex flex-col justify-between gap-3">
+      <div class="lg:col-span-5 bg-white rounded-3xl p-3 shadow-xs border border-slate-200/80 flex flex-col justify-between gap-1.5">
         <!-- 現在の音名と運指方式 -->
-        <div class="flex items-center justify-between gap-2 bg-gradient-to-r from-sky-50 to-indigo-50 p-3.5 rounded-2xl border border-sky-200/70">
+        <div class="flex items-center justify-between gap-2 bg-gradient-to-r from-sky-50 to-indigo-50 p-2 rounded-2xl border border-sky-200/70">
           <div>
             <span class="text-[11px] font-extrabold text-sky-700 block">いまの音</span>
             <div class="flex items-baseline gap-2">
-              <span id="currentNoteNameDisplay" class="text-3xl sm:text-4xl font-extrabold text-slate-800 tracking-tight">ド</span>
+              <span id="currentNoteNameDisplay" class="text-3xl font-extrabold text-slate-800 tracking-tight">ド</span>
               <span id="currentNoteSubDisplay" class="text-xs font-bold text-slate-500">(低いド / C5)</span>
             </div>
           </div>
@@ -367,7 +373,7 @@
         </div>
 
         <!-- 五線譜（ト音記号）ミニ表示 -->
-        <div class="bg-slate-50 rounded-2xl p-3 border border-slate-200/80 flex flex-col items-center">
+        <div class="bg-slate-50 rounded-2xl p-1.5 border border-slate-200/80 flex flex-col items-center">
           <div class="w-full flex items-center justify-between mb-1">
             <span class="text-xs font-extrabold text-slate-600">🎼 楽譜での位置（ト音記号）</span>
             <span id="staffOctaveNote" class="text-[11px] font-bold text-slate-400">※教科書と同じ記譜位置</span>
@@ -378,20 +384,20 @@
         </div>
 
         <!-- おさえる指リスト（テキスト要約） -->
-        <div class="bg-amber-50/70 rounded-2xl p-3 border border-amber-200/70">
-          <span class="text-xs font-extrabold text-amber-900 block mb-1.5">🖐️ おさえる指のまとめ</span>
-          <div id="fingerSummaryBox" class="text-xs sm:text-sm font-bold text-slate-700 leading-relaxed space-y-1">
+        <div class="bg-amber-50/70 rounded-2xl p-2.5 border border-amber-200/70">
+          <span class="text-xs font-extrabold text-amber-900 block mb-1">🖐️ おさえる指のまとめ</span>
+          <div id="fingerSummaryBox" class="text-xs sm:text-sm font-bold text-slate-700 leading-snug space-y-0.5">
             <!-- JSで動的更新 -->
           </div>
         </div>
 
         <!-- 吹き方のワンポイントアドバイス -->
-        <div class="bg-emerald-50/80 rounded-2xl p-3.5 border border-emerald-200/80 flex-1 flex flex-col justify-center">
+        <div class="bg-emerald-50/80 rounded-2xl p-2 border border-emerald-200/80 flex-1 flex flex-col justify-center">
           <div class="flex items-center gap-1.5 mb-1">
             <span class="text-base">💡</span>
             <span class="text-xs font-extrabold text-emerald-900">上手に吹くワンポイント</span>
           </div>
-          <p id="playingTipText" class="text-xs sm:text-sm font-bold text-emerald-950/90 leading-relaxed">
+          <p id="playingTipText" class="text-xs sm:text-sm font-bold text-emerald-950/90 leading-snug">
             低いドは息を強く吹きすぎると音がひっくり返ります。温かい息でやさしく「トゥー」と吹きましょう。
           </p>
         </div>
@@ -399,7 +405,7 @@
     </section>
 
     <!-- 4. 画面下部の音階ボタン＆PCキーボード対応パネル -->
-    <section class="bg-white rounded-3xl p-3 sm:p-4 shadow-xs border border-slate-200/80 flex flex-col gap-2.5">
+    <section class="bg-white rounded-3xl p-3 shadow-xs border border-slate-200/80 flex flex-col gap-2">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center gap-2">
           <span class="text-xs sm:text-sm font-extrabold text-slate-700">🎵 音階ボタン（ド 〜 高いラ）</span>
@@ -1257,7 +1263,7 @@
       }
 
       return `
-        <svg viewBox="0 0 ${w} ${h}" class="w-full max-w-[360px] h-auto max-h-[370px] select-none">
+        <svg viewBox="0 0 ${w} ${h}" class="w-full max-w-[360px] h-auto max-h-[250px] select-none">
           <!-- 吹き口（ビーク） -->
           <path d="M ${cx - 14} 14 L ${cx + 14} 14 L ${cx + 18} 54 L ${cx - 18} 54 Z"
                 fill="var(--rec-body)" fill-opacity="var(--rec-opacity)" stroke="var(--rec-stroke)" stroke-width="2" stroke-linejoin="round" />
@@ -1435,7 +1441,7 @@
         : `<line x1="${noteX + 7.2}" y1="${noteY}" x2="${noteX + 7.2}" y2="${noteY - 26}" stroke="#0f172a" stroke-width="2" />`;
 
       container.innerHTML = `
-        <svg viewBox="0 0 240 105" class="w-full max-w-[240px] h-[95px]">
+        <svg viewBox="0 0 240 105" class="w-full max-w-[220px] h-[62px]">
           ${linesSvg}
           <!-- ト音記号 -->
           <text x="32" y="75" fill="#1e293b" font-size="58" font-family="serif">𝄞</text>
@@ -1595,7 +1601,7 @@
             ? 'bg-amber-50 hover:bg-amber-100 text-amber-950 border-amber-300 shadow-[0_3px_0_#fcd34d]'
             : 'bg-sky-50 hover:bg-sky-100 text-sky-950 border-sky-200 shadow-[0_3px_0_#bae6fd]';
 
-        btn.className = `note-pad-btn rounded-xl border py-2 px-1 flex flex-col items-center justify-center ${colorStyle}`;
+        btn.className = `note-pad-btn rounded-xl border py-1 px-1 flex flex-col items-center justify-center ${colorStyle}`;
 
         const labelSpan = document.createElement('span');
         labelSpan.className = 'text-xs sm:text-sm font-extrabold leading-tight';
@@ -1932,8 +1938,8 @@
 
       document.querySelectorAll('.mode-btn').forEach(btn => {
         btn.className = btn.dataset.mode === newMode
-          ? 'mode-btn flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold transition bg-white text-sky-600 shadow-2xs'
-          : 'mode-btn flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition';
+          ? 'mode-btn flex-1 sm:flex-initial px-3 py-1 rounded-lg text-xs sm:text-sm font-extrabold transition bg-white text-sky-600 shadow-2xs'
+          : 'mode-btn flex-1 sm:flex-initial px-3 py-1 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition';
       });
 
       const bar = document.getElementById('practiceControlBar');
