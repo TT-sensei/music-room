@@ -2470,13 +2470,17 @@
 .tt-guide img { width: 64px; height: 64px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,.25)); }
 .tt-guide .tt-bubble { background: #fff; border: 2px solid #f59e0b; border-radius: 16px; padding: 8px 12px; font-size: 13px; font-weight: 700; color: #334155; line-height: 1.5; box-shadow: 0 4px 14px rgba(0,0,0,.12); cursor: pointer; }
 .tt-guide .tt-name { display: block; font-size: 11px; color: #b45309; font-weight: 800; margin-bottom: 2px; }
+.tt-guide .tt-close { position: absolute; top: -8px; left: -8px; width: 24px; height: 24px; border-radius: 9999px; background: #fff; border: 2px solid #f59e0b; color: #b45309; font-size: 13px; font-weight: 800; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,.15); padding: 0; z-index: 2; }
+.tt-guide-show { position: fixed; right: 14px; bottom: 14px; z-index: 80; background: #fff; border: 2px solid #f59e0b; color: #b45309; border-radius: 9999px; padding: 6px 12px; font-size: 12px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
 @media (max-width: 640px) { .tt-guide { max-width: 250px; } .tt-guide img { width: 48px; height: 48px; } }
 </style>
 
 <div class="tt-guide" id="ttGuide">
+  <button type="button" class="tt-close" id="ttGuideClose" aria-label="ナビキャラを消す" title="ナビキャラを消す">✕</button>
   <div class="tt-bubble" id="ttGuideBubble" title="タップすると一言が変わります"><span class="tt-name" id="ttGuideName"></span><span id="ttGuideLine"></span></div>
   <img id="ttGuideImg" alt="ナビキャラ">
 </div>
+<button type="button" class="tt-guide-show" id="ttGuideShow" hidden>💬 ナビを出す</button>
 <script>
 (function () {
   var CHARS = ['riku','sora','kai','saku','tsuki','nami'];
@@ -2500,6 +2504,22 @@
     if (li % LINES.length === 0) ci = (ci + 1) % CHARS.length;
     paint();
   });
+  var guideEl = document.getElementById('ttGuide');
+  var showBtn = document.getElementById('ttGuideShow');
+  var HIDE_KEY = 'musicRoom.guideHidden.v1';
+  function setGuideHidden(hidden, save) {
+    guideEl.style.display = hidden ? 'none' : '';
+    showBtn.hidden = !hidden;
+    if (save) {
+      try {
+        if (hidden) localStorage.setItem(HIDE_KEY, '1');
+        else localStorage.removeItem(HIDE_KEY);
+      } catch (e) {}
+    }
+  }
+  document.getElementById('ttGuideClose').addEventListener('click', function () { setGuideHidden(true, true); });
+  showBtn.addEventListener('click', function () { setGuideHidden(false, true); });
+  try { if (localStorage.getItem(HIDE_KEY) === '1') setGuideHidden(true, false); } catch (e) {}
   paint();
 })();
 </script>
