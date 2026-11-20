@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>みんなの鍵盤ハーモニカ 32鍵盤練習アプリ</title>
+  <title>みんなの鍵盤ハーモニカ 37鍵盤練習アプリ</title>
   <!-- Tailwind CSS -->
   <!-- Google Fonts: 親しみやすく視認性の高い丸ゴシック -->
   <link rel="stylesheet" href="css/u.css">
@@ -200,9 +200,9 @@
         </div>
         <div>
           <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-slate-800 leading-tight">
-            鍵盤ハーモニカ <span class="text-xs font-bold px-1.5 py-0.5 rounded-md bg-sky-100 text-sky-700 align-middle">32鍵盤</span>
+            鍵盤ハーモニカ <span class="text-xs font-bold px-1.5 py-0.5 rounded-md bg-sky-100 text-sky-700 align-middle">37鍵盤</span>
           </h1>
-          <p class="text-[11px] text-slate-500 hidden sm:block">低いファ(F3) 〜 高いド(C6) ・ リアルリード音源</p>
+          <p class="text-[11px] text-slate-500 hidden sm:block">低いド(C3) 〜 高いド(C6) ・ リアルリード音源</p>
         </div>
       </div>
 
@@ -389,14 +389,14 @@
       <div class="flex items-center gap-1.5">
         <span class="text-[11px] font-bold text-slate-500 hidden sm:inline">⌨️ キー位置:</span>
         <div class="inline-flex rounded-xl bg-slate-100 p-0.5 border border-slate-200/70">
-          <button type="button" data-shift="0" class="shift-btn px-2 py-1 rounded-lg text-[11px] font-bold text-slate-600 hover:text-slate-900 transition">低音(ファ↓〜)</button>
-          <button type="button" data-shift="4" class="shift-btn px-2 py-1 rounded-lg text-[11px] font-extrabold bg-white text-sky-600 shadow-xs transition">中音(ド〜)</button>
-          <button type="button" data-shift="8" class="shift-btn px-2 py-1 rounded-lg text-[11px] font-bold text-slate-600 hover:text-slate-900 transition">高音(ソ〜ド↑↑)</button>
+          <button type="button" data-shift="0" class="shift-btn px-2 py-1 rounded-lg text-[11px] font-bold text-slate-600 hover:text-slate-900 transition">低音(ド↓〜)</button>
+          <button type="button" data-shift="7" class="shift-btn px-2 py-1 rounded-lg text-[11px] font-extrabold bg-white text-sky-600 shadow-xs transition">中音(ド〜)</button>
+          <button type="button" data-shift="11" class="shift-btn px-2 py-1 rounded-lg text-[11px] font-bold text-slate-600 hover:text-slate-900 transition">高音(ソ〜ド↑↑)</button>
         </div>
       </div>
     </section>
 
-    <!-- 4. 鍵盤ハーモニカ本体UI（32鍵盤：F3 〜 C6） -->
+    <!-- 4. 鍵盤ハーモニカ本体UI（37鍵盤：C3 〜 C6） -->
     <section class="pianica-case rounded-3xl p-3 sm:p-5 flex-1 flex flex-col justify-between min-h-[270px] sm:min-h-[320px] relative overflow-hidden">
       <!-- 本体上部装飾バー（ネームプレート ＆ 吹き口ホースイラスト） -->
       <div class="flex items-center justify-between mb-2.5 px-1">
@@ -408,7 +408,7 @@
               <path d="M2 18 C10 18, 12 6, 22 6 L34 6" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
               <rect x="33" y="3" width="12" height="6" rx="2" fill="#facc15" stroke="#ca8a04" stroke-width="1.2"/>
             </svg>
-            <span class="text-[11px] font-extrabold text-slate-700 tracking-wide">MELODION / PIANICA 32</span>
+            <span class="text-[11px] font-extrabold text-slate-700 tracking-wide">MELODION / PIANICA 37</span>
           </div>
           <span id="activeBreathIndicator" class="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/25 text-white text-[11px] font-bold">
             <span class="w-2 h-2 rounded-full bg-yellow-300"></span> 発音中
@@ -417,11 +417,11 @@
 
         <!-- 右側：音域ガイド -->
         <div class="text-white/90 text-[11px] font-bold bg-black/15 px-3 py-1 rounded-full">
-          32鍵盤（F3 〜 C6）
+          37鍵盤（C3 〜 C6）
         </div>
       </div>
 
-      <!-- 鍵盤ベッド（白いフレーム内に32鍵盤を配置） -->
+      <!-- 鍵盤ベッド（白いフレーム内に37鍵盤を配置） -->
       <div class="bg-slate-900/90 p-2 sm:p-3 rounded-2xl shadow-inner flex-1 flex flex-col">
         <!-- 鍵盤上の「ここ！」ガイドマーカー帯 -->
         <div id="keyboardScrollContainer" class="keyboard-scroll overflow-x-auto overflow-y-hidden flex-1 flex flex-col relative pb-1">
@@ -464,7 +464,7 @@
         </div>
         <button id="closeAiPromptBtn" type="button" class="w-8 h-8 shrink-0 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 font-bold">✕</button>
       </div>
-      <textarea id="aiPromptText" readonly rows="18" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-sky-400 bg-slate-50">あなたは小学校の音楽の先生の助手です。学習アプリ「みんなの音楽室（鍵盤ハーモニカ32鍵盤）」で読み込める楽譜ファイルを、JSON形式で作ってください。
+      <textarea id="aiPromptText" readonly rows="18" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-sky-400 bg-slate-50">あなたは小学校の音楽の先生の助手です。学習アプリ「みんなの音楽室（鍵盤ハーモニカ37鍵盤）」で読み込める楽譜ファイルを、JSON形式で作ってください。
 
 【出力形式】
 次の形式のJSONだけを、コードブロックで出力してください（説明文は不要です）。
@@ -482,7 +482,7 @@
 ・使える音：ド レ ミ ファ ソ ラ シ
 ・半音は、ファ# のように「#」、シb のように「b」を音の後ろに付けます。
 ・長く伸ばす音は「ー」、休符は「休」と書きます。どちらも1拍分として数えます。
-・何も付けない音が基準で、ド＝C4です。「低いド」で1オクターブ下（C3）、「高いド」で1オクターブ上（C5）、「一番高いド」で2オクターブ上（C6）です。使える範囲は 低いファ（F3）〜一番高いド（C6）です。
+・何も付けない音が基準で、ド＝C4です。「低いド」で1オクターブ下（C3）、「高いド」で1オクターブ上（C5）、「一番高いド」で2オクターブ上（C6）です。使える範囲は 低いド（C3）〜一番高いド（C6）です。
 ・1曲は30〜60音くらいが目安です。小学生が練習しやすい長さにしてください。
 ・曲は、著作権の切れた唱歌・童謡・クラシック、またはオリジナルのメロディにしてください。著作権のある曲のメロディをそのまま書き起こすことはしないでください。
 
@@ -602,7 +602,10 @@
      * ============================================================================
      */
     // 実録音サンプル（Hohner Melodica / fese・CC BY 4.0）のアンカー音とループ範囲
+    // 低音の4音（48・52・55・58）は、実録音の60・64・67・70を1オクターブ下げて作成したアンカー（2026-11-20）
     const PIANICA_SAMPLE_INFO = {
+      48: ['48_C3', 1.6812, 2.65], 52: ['52_E3', 1.3415, 2.45], 55: ['55_G3', 1.4942, 2.45],
+      58: ['58_Bb3', 1.5244, 2.55],
       60: ['60_C4', 1.6291, 2.68], 64: ['64_E4', 1.4173, 2.58], 67: ['67_G4', 1.2495, 2.5],
       70: ['70_Bb4', 1.4294, 2.64], 72: ['72_C5', 1.188, 2.63], 76: ['76_E5', 1.5752, 2.69],
       79: ['79_G5', 1.3, 2.75], 82: ['82_Bb5', 1.7429, 2.73]
@@ -930,15 +933,15 @@
 
     /**
      * ============================================================================
-     * 2. 32鍵盤（F3〜C6）データ定義 ＆ ドレミ楽譜パーサー
+     * 2. 37鍵盤（C3〜C6）データ定義 ＆ ドレミ楽譜パーサー
      * ============================================================================
      */
     const NOTE_NAMES_JP = ['ド', 'ド#', 'レ', 'レ#', 'ミ', 'ファ', 'ファ#', 'ソ', 'ソ#', 'ラ', 'ラ#', 'シ'];
 
-    // F3(53) 〜 C6(84) の32鍵盤マスターデータ生成
+    // C3(48) 〜 C6(84) の37鍵盤マスターデータ生成
     const KEYS_DATA = [];
     let whiteKeyCounter = 0;
-    for (let midi = 53; midi <= 84; midi++) {
+    for (let midi = 48; midi <= 84; midi++) {
       const pitchClass = midi % 12;
       const octave = Math.floor(midi / 12) - 1; // MIDI 60 = C4
       const isBlack = [1, 3, 6, 8, 10].includes(pitchClass);
@@ -967,7 +970,7 @@
         whiteKeyCounter++;
       }
     }
-    const TOTAL_WHITE_KEYS = whiteKeyCounter; // 19白鍵
+    const TOTAL_WHITE_KEYS = whiteKeyCounter; // 22白鍵
 
     // 内蔵プリセット曲（6曲）
     const PRESET_SONGS = [
@@ -1080,8 +1083,8 @@
 
           let midi = (octave + 1) * 12 + semitone;
 
-          // 32鍵盤の範囲（F3=53 〜 C6=84）に自動クランプして安全に鳴らす
-          if (midi < 53) midi = 53;
+          // 37鍵盤の範囲（C3=48 〜 C6=84）に自動クランプして安全に鳴らす
+          if (midi < 48) midi = 48;
           if (midi > 84) midi = 84;
 
           const keyInfo = KEYS_DATA.find(k => k.midi === midi);
@@ -1114,7 +1117,7 @@
       bpm: 105,
       showDoremi: true,
       showKeyLabel: true,
-      keyShiftWhiteIndex: 4, // デフォルトは4（C4＝真ん中のドから開始）
+      keyShiftWhiteIndex: 7, // デフォルトは7（C4＝真ん中のドから開始）
       zoomMode: 'fit', // 'fit' | 'large'
       isMouseDown: false,
       mouseActiveMidi: null,
@@ -1202,7 +1205,7 @@
 
     /**
      * ============================================================================
-     * 4. 32鍵盤UIの描画と視覚更新
+     * 4. 37鍵盤UIの描画と視覚更新
      * ============================================================================
      */
     function renderKeyboard() {
@@ -1931,11 +1934,6 @@
       const notes = ['ド', 'ド#', 'レ', 'レ#', 'ミ', 'ファ', 'ファ#', 'ソ', 'ソ#', 'ラ', 'ラ#', 'シ'];
 
       notes.forEach(n => {
-        // F3〜C6の範囲外（低いド〜低いミ）はスキップ
-        if (state.padOctave === 'low' && ['ド', 'ド#', 'レ', 'レ#', 'ミ'].includes(n)) {
-          return;
-        }
-
         let token = n;
         if (state.padOctave === 'low') token = `${n}↓`;
         if (state.padOctave === 'high') token = `${n}↑`;
